@@ -13,6 +13,7 @@
 [![Tests](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
 [![Local](https://img.shields.io/badge/Verbindung-Lokal-success)](#funktionen)
 [![License: MIT](https://img.shields.io/badge/Code-MIT-yellow)](LICENSE)
+[![Unterstützen via PayPal](https://img.shields.io/badge/Support%20via-PayPal-0070BA?logo=paypal&logoColor=white)](https://paypal.me/JensSaffrich)
 
 Das **ifm IO-Link Command Center** verbindet die IO-Link-Master **AL1350 und AL1352 mit IoT Core** direkt mit Home Assistant. Druck, Durchfluss, Temperatur und Gerätezustände werden zu nutzbaren Entitäten für Dashboards, Verläufe und eigene Automationen – ohne Cloud, MQTT-Broker oder Node-RED als Zwischenstation.
 
@@ -186,6 +187,12 @@ Mit `python scripts/preview.py` startet eine lokale Oberflächen-Demo unter `htt
 **150 automatisierte Tests** decken unter anderem Dekodierung, IODD-Import, API-Fehler und Wiederherstellungsprüfungen ab. Eine Wiederherstellung ohne Wertänderungen wurde an einem realen PN7094 geprüft; tatsächliche Änderungen und Fehlerfälle wurden bislang simuliert. [Prüfumfang](docs/validation.md)
 
 Fehler, Erfahrungen mit dem AL1352 und neue Sensorprofile sind als [GitHub-Issue](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/issues) willkommen. Bitte Modell, Firmware, Integrationsversion und den beobachteten Fehler nennen. Debug-Dateien und Sicherungen vor dem öffentlichen Hochladen auf private Bezeichnungen, Seriennummern und sonstige anlagenspezifische Angaben prüfen.
+
+## Entwicklung unterstützen
+
+Dir gefällt die Integration und du möchtest ihre Weiterentwicklung unterstützen? Über eine freiwillige Unterstützung via PayPal freue ich mich:
+
+[Entwicklung über PayPal unterstützen](https://paypal.me/JensSaffrich)
 
 ## Lizenz und Projekt
 
