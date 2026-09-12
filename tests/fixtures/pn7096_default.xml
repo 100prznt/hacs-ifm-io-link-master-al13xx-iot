@@ -1,0 +1,209 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:IODevice xmlns:ns0="http://www.io-link.com/IODD/2010/10" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><ns0:ProfileBody><ns0:DeviceIdentity vendorId="310" vendorName="ifm electronic gmbh" deviceId="404">
+      <ns0:VendorText textId="TI_VendorText" />
+      <ns0:VendorUrl textId="TI_VendorUrl" />
+      <ns0:VendorLogo name="ifm-logo.png" />
+      <ns0:DeviceName textId="TI_DeviceName" />
+      <ns0:DeviceFamily textId="TI_DeviceFamily" />
+      <ns0:DeviceVariantCollection>
+        <ns0:DeviceVariant productId="PN7596" deviceSymbol="ifm-PN75-pic.png" deviceIcon="ifm-PN75-icon.png">
+          <ns0:Name textId="TI_ProductName0" />
+          <ns0:Description textId="TI_ProductDescr0" />
+        </ns0:DeviceVariant>
+        <ns0:DeviceVariant productId="PN7096" deviceSymbol="ifm-PN70-pic.png" deviceIcon="ifm-PN70-icon.png">
+          <ns0:Name textId="TI_ProductName1" />
+          <ns0:Description textId="TI_ProductDescr1" />
+        </ns0:DeviceVariant>
+      </ns0:DeviceVariantCollection>
+    </ns0:DeviceIdentity>
+    <ns0:DeviceFunction><ns0:ProcessDataCollection>
+        <ns0:ProcessData id="V_PdT">
+          <ns0:ProcessDataIn id="V_PdInT" bitLength="16">
+            <ns0:Datatype xsi:type="RecordT" bitLength="16" subindexAccessSupported="false">
+              <ns0:RecordItem bitOffset="2" subindex="1">
+                <ns0:SimpleDatatype xsi:type="IntegerT" bitLength="14">
+                  <ns0:ValueRange lowerValue="264" upperValue="750">
+                    <ns0:Name textId="TI_OL_Name" />
+                  </ns0:ValueRange>
+                  <ns0:ValueRange lowerValue="-13" upperValue="263" />
+                  <ns0:ValueRange lowerValue="-100" upperValue="-14">
+                    <ns0:Name textId="TI_UL_Name" />
+                  </ns0:ValueRange>
+                </ns0:SimpleDatatype>
+                <ns0:Name textId="TI_PD_VR_1_Name" />
+                <ns0:Description textId="TI_PD_VR_1_Descr" />
+              </ns0:RecordItem>
+              <ns0:RecordItem bitOffset="1" subindex="2">
+                <ns0:SimpleDatatype xsi:type="BooleanT">
+                  <ns0:SingleValue value="false">
+                    <ns0:Name textId="TI_PD_SV_2_false" />
+                  </ns0:SingleValue>
+                  <ns0:SingleValue value="true">
+                    <ns0:Name textId="TI_PD_SV_2_true" />
+                  </ns0:SingleValue>
+                </ns0:SimpleDatatype>
+                <ns0:Name textId="TI_PD_SV_2_Name" />
+                <ns0:Description textId="TI_PD_SV_2_Descr" />
+              </ns0:RecordItem>
+              <ns0:RecordItem bitOffset="0" subindex="3">
+                <ns0:SimpleDatatype xsi:type="BooleanT">
+                  <ns0:SingleValue value="false">
+                    <ns0:Name textId="TI_PD_SV_3_false" />
+                  </ns0:SingleValue>
+                  <ns0:SingleValue value="true">
+                    <ns0:Name textId="TI_PD_SV_3_true" />
+                  </ns0:SingleValue>
+                </ns0:SimpleDatatype>
+                <ns0:Name textId="TI_PD_SV_3_Name" />
+                <ns0:Description textId="TI_PD_SV_3_Descr" />
+              </ns0:RecordItem>
+            </ns0:Datatype>
+            <ns0:Name textId="TI_PdIn_Name" />
+          </ns0:ProcessDataIn>
+        </ns0:ProcessData>
+      </ns0:ProcessDataCollection>
+      <ns0:UserInterface><ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="1" gradient="0.01" offset="0" displayFormat="Dec.2" unitCode="1137" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="2" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="3" />
+          <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="1" gradient="0.01" offset="0" displayFormat="Dec.2" unitCode="1137" accessRightRestriction="ro" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="2" accessRightRestriction="ro" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="3" accessRightRestriction="ro" />
+          <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="1" gradient="1" offset="0" displayFormat="Dec.0" unitCode="1133" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="2" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="3" />
+          <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="1" gradient="0.14504" offset="0" displayFormat="Dec.1" unitCode="1141" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="2" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="3" />
+          <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="1" gradient="1" offset="0" displayFormat="Dec.0" unitCode="1133" accessRightRestriction="ro" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="2" accessRightRestriction="ro" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="3" accessRightRestriction="ro" />
+          <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="1" gradient="0.14504" offset="0" displayFormat="Dec.1" unitCode="1141" accessRightRestriction="ro" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="2" accessRightRestriction="ro" />
+            <ns0:RecordItemRef variableId="V_ProcessDataInput" subindex="3" accessRightRestriction="ro" />
+          </ns0:UserInterface></ns0:DeviceFunction></ns0:ProfileBody><ns0:ExternalTextCollection>
+    <ns0:PrimaryLanguage xml:lang="en">
+      <ns0:Text id="TI_ProductName0" value="PN7596" />
+      <ns0:Text id="TI_ProductDescr0" value="Electronic pressure sensor, 0...2.5 bar, G 1/4 A" />
+      <ns0:Text id="TI_ProductName1" value="PN7096" />
+      <ns0:Text id="TI_ProductDescr1" value="Electronic pressure sensor, 0...2.5 bar, G1/4 I" />
+      <ns0:Text id="TI_VendorText" value="www.ifm.com" />
+      <ns0:Text id="TI_VendorUrl" value="http://www.ifm.com/ifmgb/web/io-link-download.htm" />
+      <ns0:Text id="TI_DeviceFamily" value="PN" />
+      <ns0:Text id="TI_DeviceName" value="PN7596 / PN7096" />
+      <ns0:Text id="TI_SysCmd255_Name" value="Command without effect, for internal use only" />
+      <ns0:Text id="TI_SysCmd240_Name" value="IO-Link 1.1 system test command 240, Event 8DFE appears" />
+      <ns0:Text id="TI_SysCmd241_Name" value="IO-Link 1.1 system test command 241, Event 8DFE disappears" />
+      <ns0:Text id="TI_SysCmd242_Name" value="IO-Link 1.1 system test command 242, Event 8DFF appears" />
+      <ns0:Text id="TI_SysCmd243_Name" value="IO-Link 1.1 system test command 243, Event 8DFF disappears" />
+      <ns0:Text id="TI_SysCmd162_Name" value="Reset [LO] memory" />
+      <ns0:Text id="TI_SysCmd161_Name" value="Reset [HI] and [LO] memory" />
+      <ns0:Text id="TI_SysCmd163_Name" value="Reset [HI] memory" />
+      <ns0:Text id="TI_SysCmd169_Name" value="Reset overload counter [HIPC]" />
+      <ns0:Text id="TI_SP1_Name" value="SP_FH1" />
+      <ns0:Text id="TI_SP1_Description" value="Switch point 1, [SP1] must be greater than [rP1]. Please take into account the current [rP1] value. [SP1] will be refused if below [rP1]." />
+      <ns0:Text id="TI_rP1_Name" value="RP_FL1" />
+      <ns0:Text id="TI_rP1_Description" value="Reset point 1, [rP1] must be smaller than [SP1]. Please take into account the current [SP1] value. [rP1] will be refused if above [SP1]." />
+      <ns0:Text id="TI_SP2_Name" value="SP_FH2" />
+      <ns0:Text id="TI_SP2_Description" value="Switch point 2, [SP2] must be greater than [rP2]. Please take into account the current [rP2] value. [SP2] will be refused if below [rP2]." />
+      <ns0:Text id="TI_rP2_Name" value="RP_FL2" />
+      <ns0:Text id="TI_rP2_Description" value="Reset point 2, [rP2] must be smaller than [SP2]. Please take into account the current [SP2] value. [rP2] will be refused if above [SP2]." />
+      <ns0:Text id="TI_ou1_Name" value="Ou1" />
+      <ns0:Text id="TI_ou1_Description" value="Output configuration [OUT 1]" />
+      <ns0:Text id="TI_ou1_SV_0" value="Hno / Hysteresis fct normally open" />
+      <ns0:Text id="TI_ou1_SV_1" value="Hnc / Hysteresis fct normally closed" />
+      <ns0:Text id="TI_ou1_SV_2" value="Fno / Window fct normally open" />
+      <ns0:Text id="TI_ou1_SV_3" value="Fnc / Window fct normally closed" />
+      <ns0:Text id="TI_ou2_Name" value="Ou2" />
+      <ns0:Text id="TI_ou2_Description" value="Output configuration [OUT 2]" />
+      <ns0:Text id="TI_ou2_SV_0" value="Hno / Hysteresis fct normally open" />
+      <ns0:Text id="TI_ou2_SV_1" value="Hnc / Hysteresis fct normally closed" />
+      <ns0:Text id="TI_ou2_SV_2" value="Fno / Window fct normally open" />
+      <ns0:Text id="TI_ou2_SV_3" value="Fnc / Window fct normally closed" />
+      <ns0:Text id="TI_VDMA-dS1_Name" value="dS1" />
+      <ns0:Text id="TI_VDMA-dS1_Description" value="Switching delay for [OUT 1]" />
+      <ns0:Text id="TI_VDMA-dr1_Name" value="dR1" />
+      <ns0:Text id="TI_VDMA-dr1_Description" value="Switch-off delay for [OUT 1]" />
+      <ns0:Text id="TI_VDMA-dS2_Name" value="dS2" />
+      <ns0:Text id="TI_VDMA-dS2_Description" value="Switching delay for [OUT 2]" />
+      <ns0:Text id="TI_VDMA-dr2_Name" value="dR2" />
+      <ns0:Text id="TI_VDMA-dr2_Description" value="Switch-off delay for [OUT 2]" />
+      <ns0:Text id="TI_uni_Name" value="Uni" />
+      <ns0:Text id="TI_uni_Description" value="Selection of unit on the sensor display" />
+      <ns0:Text id="TI_uni_SV_0" value="kPa" />
+      <ns0:Text id="TI_uni_SV_1" value="bar" />
+      <ns0:Text id="TI_uni_SV_2" value="psi" />
+      <ns0:Text id="TI_P-n_Name" value="P-n" />
+      <ns0:Text id="TI_P-n_Description" value="Output polarity for the switching outputs" />
+      <ns0:Text id="TI_P-n_SV_0" value="PnP" />
+      <ns0:Text id="TI_P-n_SV_1" value="nPn" />
+      <ns0:Text id="TI_OL_Name" value="OL" />
+      <ns0:Text id="TI_UL_Name" value="UL" />
+      <ns0:Text id="TI_Lo_Name" value="LO" />
+      <ns0:Text id="TI_Lo_Description" value="Minimum memory value" />
+      <ns0:Text id="TI_Hi_Name" value="HI" />
+      <ns0:Text id="TI_Hi_Description" value="Maximum memory value" />
+      <ns0:Text id="TI_dAP_Name" value="DAP" />
+      <ns0:Text id="TI_dAP_Description" value="Response time between process value change and change of the switching output" />
+      <ns0:Text id="TI_coLr_Name" value="COLR" />
+      <ns0:Text id="TI_coLr_Description" value="Assignment of the display colours 'red' and 'green' within the measuring range" />
+      <ns0:Text id="TI_coLr_SV_0" value="rEd / Display colour red (independent of the measured value)" />
+      <ns0:Text id="TI_coLr_SV_1" value="GrEn / Display colour green (independent of the measured value)" />
+      <ns0:Text id="TI_coLr_SV_2" value="r1ou / Display colour red when OUT1 switches" />
+      <ns0:Text id="TI_coLr_SV_3" value="G1ou / Display colour green when OUT1 switches" />
+      <ns0:Text id="TI_coLr_SV_4" value="r2ou / Display colour red when OUT2 switches" />
+      <ns0:Text id="TI_coLr_SV_5" value="G2ou / Display colour green when OUT2 switches" />
+      <ns0:Text id="TI_coLr_SV_6" value="r-12 / Display colour red when the measured value is between the limit values of OUT1 and OUT2" />
+      <ns0:Text id="TI_coLr_SV_7" value="G-12 / Display colour green when the measured value is between the limit values of OUT1 and OUT2" />
+      <ns0:Text id="TI_coLr_SV_8" value="r-cF / Display colour red when the measured value is between the freely definable limit values [cFL] and [cFH]" />
+      <ns0:Text id="TI_coLr_SV_9" value="G-cF / Display colour green when the measured value is between the freely definable limit values [cFL] and [cFH]" />
+      <ns0:Text id="TI_cFH_Name" value="CFH" />
+      <ns0:Text id="TI_cFH_Description" value="Upper value for colour change.&#13;&#10;Parameter only active after selection of a freely definable colour window in the coLr parameter: [r-cF] or [G-cF].&#13;&#10;The setting range corresponds to the measuring range and its minimum limit is [cFL]" />
+      <ns0:Text id="TI_cFL_Name" value="CFL" />
+      <ns0:Text id="TI_cFL_Description" value="Lower value for colour change. &#13;&#10;Parameter only active after selection of a freely definable colour window in the coLr parameter: [r-cF] or [G-cF].&#13;&#10;The setting range corresponds to the measuring range and its maximum limit is [cFH]" />
+      <ns0:Text id="TI_diS_Name" value="diS" />
+      <ns0:Text id="TI_diS_Descr" value="Display settings" />
+      <ns0:Text id="TI_diS_Off" value="Display On / OFF" />
+      <ns0:Text id="TI_diS_SV_OFF_true" value="OFF" />
+      <ns0:Text id="TI_diS_SV_OFF_false" value="On" />
+      <ns0:Text id="TI_diS_Rot" value="Display orientation" />
+      <ns0:Text id="TI_diS_SV_ROT_true" value="Rotated 180°" />
+      <ns0:Text id="TI_diS_SV_ROT_false" value="Not rotated" />
+      <ns0:Text id="TI_diS_Refresh" value="Update rate" />
+      <ns0:Text id="TI_diS_SV_Update_d1" value="d1 / fast" />
+      <ns0:Text id="TI_diS_SV_Update_d2" value="d2 / medium" />
+      <ns0:Text id="TI_diS_SV_Update_d3" value="d3 / slow" />
+      <ns0:Text id="TI_Loc_Name" value="LOC" />
+      <ns0:Text id="TI_Loc_Description" value="[Loc] locks the local user interface to prevent unintentional changes,  [Loc] is resettable at the device" />
+      <ns0:Text id="TI_Loc_SV_0" value="Loc" />
+      <ns0:Text id="TI_Loc_SV_1" value="uLoc" />
+      <ns0:Text id="TI_HIPC_32_Name" value="HIPC" />
+      <ns0:Text id="TI_HIPC_32_Description" value="Overload counter" />
+      <ns0:Text id="TI_HIPS_Name" value="HIPS" />
+      <ns0:Text id="TI_HIPS_Description" value="Configuration of overload counter switch point" />
+      <ns0:Text id="TI_PD_VR_1_Name" value="Pressure" />
+      <ns0:Text id="TI_PD_VR_1_Descr" value="Current pressure" />
+      <ns0:Text id="TI_PD_SV_2_Name" value="Switch status [OUT2]." />
+      <ns0:Text id="TI_PD_SV_2_Descr" value="Status depends on [OU2]" />
+      <ns0:Text id="TI_PD_SV_2_true" value="active" />
+      <ns0:Text id="TI_PD_SV_2_false" value="inactive" />
+      <ns0:Text id="TI_PD_SV_3_Name" value="Switch status [OUT1]." />
+      <ns0:Text id="TI_PD_SV_3_Descr" value="Status depends on [OU1]" />
+      <ns0:Text id="TI_PD_SV_3_true" value="active" />
+      <ns0:Text id="TI_PD_SV_3_false" value="inactive" />
+      <ns0:Text id="TI_PdIn_Name" value="Process Data Input" />
+      <ns0:Text id="TI_Ev_8DFE_Name" value="Test Event 1" />
+      <ns0:Text id="TI_Ev_8DFE_Descr" value="Event appears by setting index 2 to value 240, Event disappears by setting index 2 to value 241" />
+      <ns0:Text id="TI_Ev_8DFF_Name" value="Test Event 2" />
+      <ns0:Text id="TI_Ev_8DFF_Descr" value="Event appears by setting index 2 to value 242, Event disappears by setting index 2 to value 243" />
+      <ns0:Text id="TI_M_Setup_Name" value="Setup " />
+      <ns0:Text id="TI_M_Diagnosis_Name" value="Diagnosis " />
+      <ns0:Text id="TI_M_Digital_Output1_Name" value="Digital output 1" />
+      <ns0:Text id="TI_M_Digital_Output2_Name" value="Digital output 2" />
+      <ns0:Text id="TI_M_Output_Configuration_Name" value="Output configuration " />
+      <ns0:Text id="TI_M_Display_Name" value="Setting of the sensor display " />
+      <ns0:Text id="TI_M_Memory_Name" value="Memory " />
+      <ns0:Text id="TI_M_Damping_Name" value="Damping " />
+      <ns0:Text id="TI_M_ColourFrame_Name" value="Colour frame  " />
+    </ns0:PrimaryLanguage>
+  </ns0:ExternalTextCollection>
+  </ns0:IODevice>

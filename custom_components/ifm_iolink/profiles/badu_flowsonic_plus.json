@@ -1,0 +1,279 @@
+{
+  "id": "badu_flowsonic_plus",
+  "name": "Speck BADU FlowSonic Plus",
+  "manufacturer": "Speck Pumpen",
+  "model": "BADU FlowSonic Plus",
+  "description": "Speck BADU FlowSonic Plus: Ultraschall-Durchflussmessgerät für den Poolkreislauf mit Temperaturmessung und Summenzählern. Das vorhandene Gerät meldet sich als JUMO flowTRANS US W02 mit Device-ID 0x186831. Originalbild vom Nutzer bereitgestellt.",
+  "purpose": "Poolkreislauf: Durchfluss, Wassertemperatur, Summenzähler und Zustandsüberwachung",
+  "image": "/ifm_iolink_static/images/badu-flowsonic-plus.png",
+  "notes": "Messwerte und Statusanzeigen entsprechen der vom Nutzer bestätigten Node-RED-Übersetzung. Float-Format und Einheiten am Gerät lesend geprüft (64=0, 121=4, 123=2). Das verwandte JUMO-Archiv von 2022 enthält Device-ID 0x186831 nicht und ersetzt dieses Profil daher nicht. Systemfehler bildet wie im Flow das ODER der überwachten Statusflags, einschließlich Grenzwert-/Chargenaktivität. Bytes 8–11 zusätzlich roh sichtbar.",
+  "source": "JUMO-flowTRANS_US-20220908-IODD1.1.zip (verwandte Modelle); BADU-Betriebsanleitung 01/2025; bereitgestellter Node-RED-Flow; lesender Hardwareabgleich 12.09.2026.",
+  "match": [
+    {
+      "vendorid": 839,
+      "deviceid": 1599537
+    }
+  ],
+  "length": 22,
+  "fields": [
+    {
+      "key": "flow",
+      "name": "Durchfluss",
+      "type": "float32",
+      "offset": 0,
+      "unit": "m³/h",
+      "device_class": "volume_flow_rate",
+      "state_class": "measurement",
+      "precision": 3,
+      "invalid_when": {
+        "offset": 21,
+        "mask": 4
+      }
+    },
+    {
+      "key": "temperature",
+      "name": "Wassertemperatur",
+      "type": "float32",
+      "offset": 4,
+      "unit": "°C",
+      "device_class": "temperature",
+      "state_class": "measurement",
+      "precision": 3,
+      "invalid_when": {
+        "offset": 21,
+        "mask": 8
+      }
+    },
+    {
+      "key": "totalizer1",
+      "name": "Summenzähler 1",
+      "type": "float32",
+      "offset": 12,
+      "unit": "m³",
+      "device_class": "volume",
+      "state_class": "total",
+      "precision": 3
+    },
+    {
+      "key": "totalizer2",
+      "name": "Summenzähler 2",
+      "type": "float32",
+      "offset": 16,
+      "unit": "m³",
+      "device_class": "volume",
+      "state_class": "total",
+      "precision": 3
+    },
+    {
+      "key": "status",
+      "name": "Statuswort (roh)",
+      "type": "uint",
+      "offset": 20,
+      "length": 2,
+      "precision": 0
+    },
+    {
+      "key": "limit1",
+      "name": "Grenzwertüberwachung 1",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "shift": 0,
+      "bits": 1
+    },
+    {
+      "key": "limit2",
+      "name": "Grenzwertüberwachung 2",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "shift": 1,
+      "bits": 1
+    },
+    {
+      "key": "flow_invalid",
+      "name": "Prozesswert Durchfluss ungültig",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "shift": 2,
+      "bits": 1,
+      "device_class": "problem"
+    },
+    {
+      "key": "temperature_invalid",
+      "name": "Prozesswert Temperatur ungültig",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "shift": 3,
+      "bits": 1,
+      "device_class": "problem"
+    },
+    {
+      "key": "reserved_word",
+      "name": "Bytes 8-11 (roh)",
+      "type": "uint",
+      "offset": 8,
+      "length": 4,
+      "precision": 0
+    },
+    {
+      "key": "empty_pipe",
+      "name": "Leerrohr",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "shift": 5,
+      "bits": 1
+    },
+    {
+      "key": "air_bubbles",
+      "name": "Luftblasen vorhanden",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "shift": 6,
+      "bits": 1
+    },
+    {
+      "key": "batch_active",
+      "name": "Charge aktiv",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "shift": 7,
+      "bits": 1
+    },
+    {
+      "key": "batch_error",
+      "name": "Chargenfehler",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "shift": 8,
+      "bits": 1,
+      "device_class": "problem"
+    },
+    {
+      "key": "configuration_error",
+      "name": "Konfiguration beschädigt",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "shift": 9,
+      "bits": 1,
+      "device_class": "problem"
+    },
+    {
+      "key": "calibration_error",
+      "name": "Kalibrierdaten beschädigt",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "shift": 10,
+      "bits": 1,
+      "device_class": "problem"
+    },
+    {
+      "key": "system_error",
+      "name": "Systemfehler",
+      "type": "bool",
+      "offset": 20,
+      "length": 2,
+      "mask": 2031,
+      "device_class": "problem"
+    }
+  ],
+  "conditions": [
+    {
+      "index": 64,
+      "value": 0
+    },
+    {
+      "index": 121,
+      "value": 4
+    },
+    {
+      "index": 123,
+      "value": 2
+    }
+  ],
+  "parameters": [
+    {
+      "index": 64,
+      "name": "Prozessdatenformat",
+      "description": "",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "0",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "Prozessdatenformat",
+        "length": 1,
+        "fields": [
+          {
+            "key": "value",
+            "name": "Prozessdatenformat",
+            "type": "uint",
+            "offset": 0,
+            "length": 1,
+            "shift": 0,
+            "bits": 8,
+            "precision": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 121,
+      "name": "Durchfluss",
+      "description": "",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "1",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "Durchfluss",
+        "length": 1,
+        "fields": [
+          {
+            "key": "value",
+            "name": "Durchfluss",
+            "type": "uint",
+            "offset": 0,
+            "length": 1,
+            "shift": 0,
+            "bits": 8,
+            "precision": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 123,
+      "name": "Summenzähler",
+      "description": "",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "1",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "Summenzähler",
+        "length": 1,
+        "fields": [
+          {
+            "key": "value",
+            "name": "Summenzähler",
+            "type": "uint",
+            "offset": 0,
+            "length": 1,
+            "shift": 0,
+            "bits": 8,
+            "precision": 0
+          }
+        ]
+      }
+    }
+  ]
+}

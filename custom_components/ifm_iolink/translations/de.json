@@ -1,0 +1,72 @@
+{
+  "title": "ifm IO-Link Master AL13xx IoT",
+  "config": {
+    "step": {
+      "user": {
+        "title": "IO-Link Master hinzufügen",
+        "menu_options": {
+          "manual": "IoT-Adresse eingeben",
+          "scan": "Netzwerk durchsuchen"
+        }
+      },
+      "manual": {
+        "title": "Mit dem Master verbinden",
+        "description": "AL1350 (4 Ports) oder AL1352 (8 Ports). Nach dem Einrichten steht die Portzuweisung in der Seitenleiste unter IO-Link bereit.",
+        "data": {
+          "url": "IoT-Adresse (http:// oder https://)",
+          "name": "Name des Masters",
+          "username": "Benutzername",
+          "password": "Passwort (nur bei aktiviertem Security Mode)",
+          "verify_ssl": "TLS-Zertifikat prüfen"
+        }
+      },
+      "scan": {
+        "title": "Master im Netzwerk suchen",
+        "description": "Die Suche prüft nur das angegebene Netz. Größere Netze in kleinere Bereiche aufteilen.",
+        "data": {
+          "network": "IPv4-Netz (CIDR)"
+        }
+      },
+      "select": {
+        "title": "Gefundenen Master auswählen",
+        "data": {
+          "url": "Master"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Master nicht erreichbar, Modell nicht unterstützt oder Zugriff verweigert.",
+      "invalid_auth": "Zugangsdaten und HTTPS prüfen.",
+      "none_found": "Keine Master gefunden. Bei Security Mode bitte die Adresse manuell eingeben.",
+      "invalid_network": "Ein privates IPv4-Netz mit maximal 1024 Adressen eingeben, z. B. 192.168.1.0/24.",
+      "wrong_device": "Diese Adresse gehört zu einem anderen Master (abweichende Seriennummer)."
+    },
+    "abort": {
+      "already_configured": "Dieser Master ist bereits eingerichtet.",
+      "cannot_connect": "Master nicht erreichbar, Modell nicht unterstützt oder Zugriff verweigert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Verbindung & Abfrageintervall",
+        "description": "Geräte und eigene Profile werden in der IO-Link-Seitenleiste verwaltet.",
+        "data": {
+          "url": "IoT-Adresse (http:// oder https://)",
+          "name": "Name des Masters",
+          "username": "Benutzername",
+          "password": "Passwort (nur bei aktiviertem Security Mode)",
+          "verify_ssl": "TLS-Zertifikat prüfen",
+          "interval": "Abfrageintervall in Sekunden"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Master nicht erreichbar, Modell nicht unterstützt oder Zugriff verweigert.",
+      "invalid_auth": "Zugangsdaten und HTTPS prüfen.",
+      "none_found": "Keine Master gefunden. Bei Security Mode bitte die Adresse manuell eingeben.",
+      "invalid_network": "Ein privates IPv4-Netz mit maximal 1024 Adressen eingeben, z. B. 192.168.1.0/24.",
+      "wrong_device": "Diese Adresse gehört zu einem anderen Master (abweichende Seriennummer)."
+    }
+  }
+}

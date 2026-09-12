@@ -1,0 +1,722 @@
+{
+  "id": "pn7094",
+  "name": "ifm PN7094 · Status B",
+  "manufacturer": "ifm electronic gmbh",
+  "model": "PN7094",
+  "description": "Elektronischer Drucksensor, -1.00...10.00 bar, ISO228 - G1/4I",
+  "purpose": "Druckluft: Kompressor, Verteiler und Speicher",
+  "image": "/ifm_iolink_static/images/pn7094.png",
+  "source": "ifm-000259-20190307-IODD1.1.xml",
+  "notes": "Aus Hersteller-IODD importiert. Zuordnung über Vendor-ID und aktive Device-ID; Prozesswerte vor Nutzung mit Display vergleichen.",
+  "match": [
+    {
+      "vendorid": 310,
+      "deviceid": 601
+    }
+  ],
+  "length": 4,
+  "fields": [
+    {
+      "key": "pd_1",
+      "name": "Druck",
+      "type": "int",
+      "offset": 0,
+      "length": 2,
+      "shift": 0,
+      "bits": 16,
+      "precision": 3,
+      "scale": 0.001,
+      "add": 0.0,
+      "unit": "bar",
+      "device_class": "pressure",
+      "state_class": "measurement",
+      "invalid_values": [
+        32760.0,
+        32764.0
+      ]
+    },
+    {
+      "key": "pd_2",
+      "name": "Gerätestatus",
+      "type": "uint",
+      "offset": 3,
+      "length": 1,
+      "shift": 4,
+      "bits": 4,
+      "precision": 0
+    },
+    {
+      "key": "pd_3",
+      "name": "OUT2",
+      "type": "bool",
+      "offset": 3,
+      "length": 1,
+      "shift": 1,
+      "bits": 1,
+      "precision": 0
+    },
+    {
+      "key": "pd_4",
+      "name": "OUT1",
+      "type": "bool",
+      "offset": 3,
+      "length": 1,
+      "shift": 0,
+      "bits": 1,
+      "precision": 0
+    }
+  ],
+  "parameters": [
+    {
+      "index": 25,
+      "name": "Anlagenkennzeichen",
+      "description": "Beschreibt die Gerätefunktion",
+      "access": "rw",
+      "datatype": "StringT",
+      "default": "***"
+    },
+    {
+      "index": 26,
+      "name": "Ortskennzeichen",
+      "description": "Beschreibt den Installationsort",
+      "access": "rw",
+      "datatype": "StringT",
+      "default": "***"
+    },
+    {
+      "index": 500,
+      "name": "P-n",
+      "description": "Ausgangspolarität der Schaltausgänge",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "0",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "P-n",
+        "length": 1,
+        "fields": [
+          {
+            "key": "value",
+            "name": "P-n",
+            "type": "uint",
+            "offset": 0,
+            "length": 1,
+            "shift": 0,
+            "bits": 8,
+            "precision": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 510,
+      "name": "dAP",
+      "description": "Dämpfung des Messsignals",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "60",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "dAP",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "dAP",
+            "type": "uint",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 3,
+            "scale": 0.001,
+            "add": 0.0,
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 545,
+      "name": "Aktive Events",
+      "description": "Bitmaske für aktuell anstehende Events",
+      "access": "ro",
+      "datatype": "RecordT",
+      "default": ""
+    },
+    {
+      "index": 546,
+      "name": "Parameter Einstellungsfehler",
+      "description": "Zeigt den zum Downloadzeitpunkt fehlerhaft eingestellten Parameter an",
+      "access": "ro",
+      "datatype": "ArrayT",
+      "default": "0"
+    },
+    {
+      "index": 550,
+      "name": "Loc",
+      "description": "[Loc] verriegelt die Sensorbedienung zum Schutz vor ungewollter Verstellung. [Loc] kann am Gerät zurückgesetzt werden",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "1",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "Loc",
+        "length": 1,
+        "fields": [
+          {
+            "key": "value",
+            "name": "Loc",
+            "type": "uint",
+            "offset": 0,
+            "length": 1,
+            "shift": 0,
+            "bits": 8,
+            "precision": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 551,
+      "name": "uni",
+      "description": "Auswahl der physikalischen Sensoreinheit",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "1",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "uni",
+        "length": 1,
+        "fields": [
+          {
+            "key": "value",
+            "name": "uni",
+            "type": "uint",
+            "offset": 0,
+            "length": 1,
+            "shift": 0,
+            "bits": 8,
+            "precision": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 552,
+      "name": "diS",
+      "description": "Anzeigeeinstellungen",
+      "access": "rw",
+      "datatype": "RecordT",
+      "default": ""
+    },
+    {
+      "index": 554,
+      "name": "coLr",
+      "description": "Zuordnung der Display-Farben „rot“ und „grün“ innerhalb des Messbereichs",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "2",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "coLr",
+        "length": 1,
+        "fields": [
+          {
+            "key": "value",
+            "name": "coLr",
+            "type": "uint",
+            "offset": 0,
+            "length": 1,
+            "shift": 0,
+            "bits": 8,
+            "precision": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 555,
+      "name": "cFL",
+      "description": "Unterer Wert für Farbwechsel. Parameter nur aktiv wenn coLr=[r-cF] oder [G-cF]. Der Einstellbereich wird durch [cFH] begrenzt.\r\n! Schrittweitenrundung !",
+      "access": "rw",
+      "datatype": "IntegerT",
+      "default": "-1000",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "cFL",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "cFL",
+            "type": "int",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 3,
+            "scale": 0.001,
+            "add": 0.0,
+            "unit": "bar",
+            "device_class": "pressure",
+            "state_class": "measurement",
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 556,
+      "name": "cFH",
+      "description": "Oberer Wert für Farbwechsel. Parameter nur aktiv wenn coLr=[r-cF] oder [G-cF]. Der Einstellbereich wird durch [cFL] begrenzt.\r\n! Schrittweitenrundung !",
+      "access": "rw",
+      "datatype": "IntegerT",
+      "default": "10000",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "cFH",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "cFH",
+            "type": "int",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 3,
+            "scale": 0.001,
+            "add": 0.0,
+            "unit": "bar",
+            "device_class": "pressure",
+            "state_class": "measurement",
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 560,
+      "name": "Hi",
+      "description": "Maximalwertspeicher",
+      "access": "ro",
+      "datatype": "IntegerT",
+      "default": "",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "Hi",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "Hi",
+            "type": "int",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 3,
+            "scale": 0.001,
+            "add": 0.0,
+            "unit": "bar",
+            "device_class": "pressure",
+            "state_class": "measurement",
+            "invalid_values": [
+              32760.0,
+              32764.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "index": 561,
+      "name": "Lo",
+      "description": "Minimalwertspeicher",
+      "access": "ro",
+      "datatype": "IntegerT",
+      "default": "",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "Lo",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "Lo",
+            "type": "int",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 3,
+            "scale": 0.001,
+            "add": 0.0,
+            "unit": "bar",
+            "device_class": "pressure",
+            "state_class": "measurement",
+            "invalid_values": [
+              32760.0,
+              32764.0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "index": 580,
+      "name": "ou1",
+      "description": "Ausgangkonfiguration [OUT 1]",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "3",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "ou1",
+        "length": 1,
+        "fields": [
+          {
+            "key": "value",
+            "name": "ou1",
+            "type": "uint",
+            "offset": 0,
+            "length": 1,
+            "shift": 0,
+            "bits": 8,
+            "precision": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 581,
+      "name": "dS1",
+      "description": "Schaltverzögerung für [OUT 1]",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "0",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "dS1",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "dS1",
+            "type": "uint",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 1,
+            "scale": 0.1,
+            "add": 0.0,
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 582,
+      "name": "dr1",
+      "description": "Rückschaltverzögerung für [OUT 1]",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "0",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "dr1",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "dr1",
+            "type": "uint",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 1,
+            "scale": 0.1,
+            "add": 0.0,
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 583,
+      "name": "SP1 / FH1 - PRES",
+      "description": "Schaltpunkt 1 / Druck, [SP1] muss größer als [rP1] sein. Bitte berücksichtigen Sie den aktuellen [rP1]. Wird der [SP1] unter den [rP1] gestellt, so wird dies abgelehnt. [SP] = [FH] und [rP] = [FL] bei [OU1] = Fno, Fnc.\r\n! Schrittweitenrundung !",
+      "access": "rw",
+      "datatype": "IntegerT",
+      "default": "2500",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "SP1 / FH1 - PRES",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "SP1 / FH1 - PRES",
+            "type": "int",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 3,
+            "scale": 0.001,
+            "add": 0.0,
+            "unit": "bar",
+            "device_class": "pressure",
+            "state_class": "measurement",
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 584,
+      "name": "rP1 / FL1 - PRES",
+      "description": "Rückschaltpunkt 1 / Druck, [rP1] muss kleiner als [SP1] sein. Bitte berücksichtigen Sie den aktuellen [SP1]. Wird der [rP1] über den [SP1] gestellt, so wird dies abgelehnt.[rP] = [FL] und [SP] = [FH] bei [OU1] = Fno, Fnc. \r\n! Schrittweitenrundung !",
+      "access": "rw",
+      "datatype": "IntegerT",
+      "default": "2300",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "rP1 / FL1 - PRES",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "rP1 / FL1 - PRES",
+            "type": "int",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 3,
+            "scale": 0.001,
+            "add": 0.0,
+            "unit": "bar",
+            "device_class": "pressure",
+            "state_class": "measurement",
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 590,
+      "name": "ou2",
+      "description": "Ausgangkonfiguration [OUT 2]",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "3",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "ou2",
+        "length": 1,
+        "fields": [
+          {
+            "key": "value",
+            "name": "ou2",
+            "type": "uint",
+            "offset": 0,
+            "length": 1,
+            "shift": 0,
+            "bits": 8,
+            "precision": 0
+          }
+        ]
+      }
+    },
+    {
+      "index": 591,
+      "name": "dS2",
+      "description": "Schaltverzögerung für [OUT 2]",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "0",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "dS2",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "dS2",
+            "type": "uint",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 1,
+            "scale": 0.1,
+            "add": 0.0,
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 592,
+      "name": "dr2",
+      "description": "Rückschaltverzögerung für [OUT 2]",
+      "access": "rw",
+      "datatype": "UIntegerT",
+      "default": "0",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "dr2",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "dr2",
+            "type": "uint",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 1,
+            "scale": 0.1,
+            "add": 0.0,
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 593,
+      "name": "SP2 / FH2 - PRES",
+      "description": "Schaltpunkt 2 / Druck, [SP2] muss größer als [rP2] sein. Bitte berücksichtigen Sie den aktuellen [rP2]. Wird der [SP2] unter den [rP2] gestellt, so wird dies abgelehnt. [SP] = [FH] und [rP] = [FL] bei [OU2] = Fno, Fnc.\r\n! Schrittweitenrundung !",
+      "access": "rw",
+      "datatype": "IntegerT",
+      "default": "7500",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "SP2 / FH2 - PRES",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "SP2 / FH2 - PRES",
+            "type": "int",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 3,
+            "scale": 0.001,
+            "add": 0.0,
+            "unit": "bar",
+            "device_class": "pressure",
+            "state_class": "measurement",
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 594,
+      "name": "rP2 / FL2 - PRES",
+      "description": "Rückschaltpunkt 2 / Druck, [rP2] muss kleiner als [SP2] sein. Bitte berücksichtigen Sie den aktuellen [SP2]. Wird der [rP2] über den [SP2] gestellt, so wird dies abgelehnt.[rP] = [FL] und [SP] = [FH] bei [OU2] = Fno, Fnc. \r\n! Schrittweitenrundung !",
+      "access": "rw",
+      "datatype": "IntegerT",
+      "default": "7300",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "rP2 / FL2 - PRES",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "rP2 / FL2 - PRES",
+            "type": "int",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 3,
+            "scale": 0.001,
+            "add": 0.0,
+            "unit": "bar",
+            "device_class": "pressure",
+            "state_class": "measurement",
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 5003,
+      "name": "HIPS",
+      "description": "Einstellung der Schwelle für den Druck-Überlastzähler",
+      "access": "rw",
+      "datatype": "IntegerT",
+      "default": "10000",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "HIPS",
+        "length": 2,
+        "fields": [
+          {
+            "key": "value",
+            "name": "HIPS",
+            "type": "int",
+            "offset": 0,
+            "length": 2,
+            "shift": 0,
+            "bits": 16,
+            "precision": 3,
+            "scale": 0.001,
+            "add": 0.0,
+            "unit": "bar",
+            "device_class": "pressure",
+            "state_class": "measurement",
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 5004,
+      "name": "HIPC",
+      "description": "Anzahl Druck-Überlastvorgänge",
+      "access": "ro",
+      "datatype": "UIntegerT",
+      "default": "",
+      "decoder": {
+        "id": "parameter_value",
+        "name": "HIPC",
+        "length": 4,
+        "fields": [
+          {
+            "key": "value",
+            "name": "HIPC",
+            "type": "uint",
+            "offset": 0,
+            "length": 4,
+            "shift": 0,
+            "bits": 32,
+            "precision": 0,
+            "scale": 1.0,
+            "add": 0.0,
+            "invalid_values": []
+          }
+        ]
+      }
+    },
+    {
+      "index": 16512,
+      "name": "MDC Descr",
+      "description": "Beschreibung des Messdatenkanals",
+      "access": "ro",
+      "datatype": "RecordT",
+      "default": ""
+    }
+  ]
+}

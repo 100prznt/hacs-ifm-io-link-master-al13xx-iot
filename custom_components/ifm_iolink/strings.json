@@ -1,0 +1,72 @@
+{
+  "title": "ifm IO-Link Master AL13xx IoT",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add IO-Link master",
+        "menu_options": {
+          "manual": "Enter IoT address",
+          "scan": "Scan network"
+        }
+      },
+      "manual": {
+        "title": "Connect to the master",
+        "description": "AL1350 (4 ports) or AL1352 (8 ports). Assign devices in the IO-Link sidebar panel after setup.",
+        "data": {
+          "url": "IoT address (http:// or https://)",
+          "name": "Master name",
+          "username": "Username",
+          "password": "Password (security mode only)",
+          "verify_ssl": "Verify TLS certificate"
+        }
+      },
+      "scan": {
+        "title": "Find masters on the network",
+        "description": "Only the specified subnet is scanned. Split larger networks into smaller ranges.",
+        "data": {
+          "network": "IPv4 subnet (CIDR)"
+        }
+      },
+      "select": {
+        "title": "Select a discovered master",
+        "data": {
+          "url": "Master"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach a supported master or access was denied.",
+      "invalid_auth": "Check credentials and HTTPS.",
+      "none_found": "No masters found. For security mode, enter the address manually.",
+      "invalid_network": "Enter a private IPv4 subnet with at most 1024 addresses.",
+      "wrong_device": "This address belongs to a different master (serial number mismatch)."
+    },
+    "abort": {
+      "already_configured": "This master is already configured.",
+      "cannot_connect": "Cannot reach a supported master or access was denied."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Connection and polling",
+        "description": "Manage devices and profiles in the IO-Link sidebar panel.",
+        "data": {
+          "url": "IoT address (http:// or https://)",
+          "name": "Master name",
+          "username": "Username",
+          "password": "Password (security mode only)",
+          "verify_ssl": "Verify TLS certificate",
+          "interval": "Polling interval in seconds"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach a supported master or access was denied.",
+      "invalid_auth": "Check credentials and HTTPS.",
+      "none_found": "No masters found. For security mode, enter the address manually.",
+      "invalid_network": "Enter a private IPv4 subnet with at most 1024 addresses.",
+      "wrong_device": "This address belongs to a different master (serial number mismatch)."
+    }
+  }
+}

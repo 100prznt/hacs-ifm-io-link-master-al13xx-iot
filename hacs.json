@@ -1,0 +1,5 @@
+{
+  "name": "ifm IO-Link Master AL13xx IoT",
+  "homeassistant": "2025.7.0",
+  "render_readme": true
+}
