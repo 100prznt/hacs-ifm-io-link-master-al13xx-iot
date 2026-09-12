@@ -1,9 +1,9 @@
 # ifm IO-Link Command Center for Home Assistant
 
-[Deutsch](README.md) | **English**
+[Deutsch](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/README.md) | **English**
 
 <p align="center">
-  <img src="custom_components/ifm_iolink/brand/icon.png" alt="ifm IO-Link project logo" width="100">
+  <img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/custom_components/ifm_iolink/brand/icon.png" alt="ifm IO-Link project logo" width="100">
 </p>
 
 <p align="center"><strong>Industrial sensors for your smart home.<br>Pool, heating and compressed air – connected locally, monitored together.</strong></p>
@@ -12,7 +12,7 @@
 [![HACS](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5)](https://www.hacs.xyz/)
 [![Tests](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
 [![Local](https://img.shields.io/badge/Connection-Local-success)](#features)
-[![License: MIT](https://img.shields.io/badge/Code-MIT-yellow)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/LICENSE)
 [![Support via PayPal](https://img.shields.io/badge/Support%20via-PayPal-0070BA?logo=paypal&logoColor=white)](https://paypal.me/JensSaffrich)
 
 The **ifm IO-Link Command Center** connects **AL1350 and AL1352 IO-Link masters with IoT Core** directly to Home Assistant. Pressure, flow, temperature and device status become useful entities for dashboards, history and your own automations – without a cloud service, MQTT broker or Node-RED in between.
@@ -22,7 +22,7 @@ The graphical Command Center places the master at the centre, with connections t
 **A project by [JS-DE-Tech](https://github.com/JS-DE-Tech), developed for a real pool, heating and compressed-air installation.**
 
 <p align="center">
-  <img src="docs/images/screenshots/portuebersicht.png" alt="Command Center showing an AL1350, connected sensors, live readings and port assignment" width="1100">
+  <img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/docs/images/screenshots/portuebersicht.png" alt="Command Center showing an AL1350, connected sensors, live readings and port assignment" width="1100">
 </p>
 
 <p align="center"><a href="#features">Features</a> · <a href="#my-real-world-project">My project</a> · <a href="#installation">Installation</a> · <a href="#parameter-backup-and-sensor-replacement">Parameter backups</a> · <a href="#custom-devices-and-iodd-import">Custom devices</a></p>
@@ -54,7 +54,7 @@ Routine measurement polling reads the devices. **Write operations take place dur
 **Create once, reuse across ports:** The device library contains both bundled and custom profiles. Import manufacturer IODDs or use the profile editor to add device information, images and raw-data decoding, and test the result. The same profile can then be selected on multiple ports.
 
 <p align="center">
-  <img src="docs/images/screenshots/geraetebibliothek.png" alt="Device library with BADU and ifm profiles, IODD import and a custom device editor" width="1100">
+  <img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/docs/images/screenshots/geraetebibliothek.png" alt="Device library with BADU and ifm profiles, IODD import and a custom device editor" width="1100">
 </p>
 
 ## My real-world project
@@ -62,7 +62,7 @@ Routine measurement polling reads the devices. **Write operations take place dur
 I wanted to do more than read values on the devices themselves: I wanted to spot changes in my home systems early in Home Assistant. Working Node-RED decoders were the starting point. They became a standalone integration with a shared interface for the connected IO-Link sensors.
 
 <p align="center">
-  <img src="docs/images/project/pool.jpeg" alt="Pool equipment with filter, flow measurement and an ifm IO-Link master" width="900">
+  <img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/docs/images/project/pool.jpeg" alt="Pool equipment with filter, flow measurement and an ifm IO-Link master" width="900">
 </p>
 
 ### Pool filter: knowing when cleaning is needed
@@ -85,12 +85,12 @@ Another **PN7096** monitors heating-circuit pressure. History and custom notific
 
 <table>
 <tr>
-<td width="50%"><img src="docs/images/project/poolfilter.jpeg" alt="PN7096 mounted on the pool filter"><br><strong>Pool filter pressure</strong></td>
-<td width="50%"><img src="docs/images/project/flowsonic-plus.jpeg" alt="BADU FlowSonic Plus in the water circuit"><br><strong>Flow and water temperature</strong></td>
+<td width="50%"><img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/docs/images/project/poolfilter.jpeg" alt="PN7096 mounted on the pool filter"><br><strong>Pool filter pressure</strong></td>
+<td width="50%"><img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/docs/images/project/flowsonic-plus.jpeg" alt="BADU FlowSonic Plus in the water circuit"><br><strong>Flow and water temperature</strong></td>
 </tr>
 <tr>
-<td width="50%"><img src="docs/images/project/heizung.jpeg" alt="PN7096 monitoring heating-circuit pressure"><br><strong>Heating-circuit monitoring</strong></td>
-<td width="50%"><img src="docs/images/project/druckluft.jpeg" alt="PN7094 and AL1350 in the compressed-air installation"><br><strong>Compressed air and control pressure</strong></td>
+<td width="50%"><img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/docs/images/project/heizung.jpeg" alt="PN7096 monitoring heating-circuit pressure"><br><strong>Heating-circuit monitoring</strong></td>
+<td width="50%"><img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/docs/images/project/druckluft.jpeg" alt="PN7094 and AL1350 in the compressed-air installation"><br><strong>Compressed air and control pressure</strong></td>
 </tr>
 </table>
 
@@ -102,8 +102,8 @@ The pictured splitter is labelled **POE-SP02BT-POE** and offers several output v
 
 <table>
 <tr>
-<td width="50%"><img src="docs/images/project/pool2.jpeg" alt="AL1350 with an external PoE splitter"><br><strong>Master and PoE splitter</strong></td>
-<td width="50%"><img src="docs/images/project/pool_poe.jpeg" alt="Detail of the PoE splitter behind the IO-Link master"><br><strong>Power supply and sensor connections</strong></td>
+<td width="50%"><img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/docs/images/project/pool2.jpeg" alt="AL1350 with an external PoE splitter"><br><strong>Master and PoE splitter</strong></td>
+<td width="50%"><img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/docs/images/project/pool_poe.jpeg" alt="Detail of the PoE splitter behind the IO-Link master"><br><strong>Power supply and sensor connections</strong></td>
 </tr>
 </table>
 
@@ -162,7 +162,7 @@ The **Sensortausch & Sicherung** (“Sensor replacement & backup”) section off
 
 When replacing a sensor, its device identification and profile must match; the replacement's serial number may differ. Supported writable parameters are transferred individually and read back. Unchanged values, read-only values and system commands are skipped. The process stops on an error, leaving any values already written in place. The report records the result; there is no automatic rollback.
 
-The backup covers **the parameters defined in the profile**, not a complete device image. The BADU profile currently contains three verified format/unit parameters. The master's automatic IO-Link Data Storage function is separate and is not enabled by this integration. Details and limitations: [Technical notes (German)](docs/technical-notes.md).
+The backup covers **the parameters defined in the profile**, not a complete device image. The BADU profile currently contains three verified format/unit parameters. The master's automatic IO-Link Data Storage function is separate and is not enabled by this integration. Details and limitations: [Technical notes (German)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/docs/technical-notes.md).
 
 ## Custom devices and IODD import
 
@@ -170,7 +170,7 @@ In the **Gerätebibliothek** (“Device library”), import a manufacturer's IOD
 
 The importer supports integers, booleans, IEEE-754 floats, simple records, bit positions and static scaling, among other features. Unsupported or ambiguous definitions are reported as notes. Depending on the sensor, the profile may need further adjustments.
 
-Without a suitable IODD, assign the device as **Unbekannt** (“Unknown”) and export a debug file. This can help you create a custom JSON decoding profile, test it directly in the Command Center, add an image and description, and assign it to several ports. Profiles describe data decoding; they do not contain executable Python or JavaScript code. [Profile format and examples (German)](docs/device-profiles.md)
+Without a suitable IODD, assign the device as **Unbekannt** (“Unknown”) and export a debug file. This can help you create a custom JSON decoding profile, test it directly in the Command Center, add an image and description, and assign it to several ports. Profiles describe data decoding; they do not contain executable Python or JavaScript code. [Profile format and examples (German)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/docs/device-profiles.md)
 
 ## Development, testing and feedback
 
@@ -184,7 +184,7 @@ node --check custom_components/ifm_iolink/frontend/panel.js
 
 Run `python scripts/preview.py` to start a local interface demo at `http://127.0.0.1:8765/`. It uses sample values only. Build the installation archive with `python scripts/package.py`.
 
-**150 automated tests** cover decoding, IODD import, API errors and restore validation, among other areas. A restore without value changes has been checked on a physical PN7094; actual changes and failure scenarios have so far been simulated. [Validation scope (German)](docs/validation.md)
+**150 automated tests** cover decoding, IODD import, API errors and restore validation, among other areas. A restore without value changes has been checked on a physical PN7094; actual changes and failure scenarios have so far been simulated. [Validation scope (German)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/docs/validation.md)
 
 Bug reports, AL1352 hardware experiences and new sensor profiles are welcome through [GitHub Issues](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/issues). Please include the model, firmware, integration version and observed problem. Before uploading debug files or backups publicly, check them for private names, serial numbers and other installation-specific information.
 
@@ -196,6 +196,6 @@ Enjoying the integration and want to support its continued development? Voluntar
 
 ## Licence and project
 
-The project's own source code is licensed under the [MIT licence](LICENSE). Manufacturer images, IODD excerpts, logos and product names retain their respective rights. The installation photos were supplied by JS-DE-Tech. [Image credits and sources (German)](docs/assets.md)
+The project's own source code is licensed under the [MIT licence](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/LICENSE). Manufacturer images, IODD excerpts, logos and product names retain their respective rights. The installation photos were supplied by JS-DE-Tech. [Image credits and sources (German)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/docs/assets.md)
 
 This is an independent community integration by **JS-DE-Tech**, not an official product of ifm, Speck or JUMO.
