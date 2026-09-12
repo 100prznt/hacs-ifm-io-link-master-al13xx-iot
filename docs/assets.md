@@ -18,5 +18,6 @@ Die JUMO-Datei enthält 25 Geräte-IDs mit je zwei Prozessdatenformaten. `0x1868
 `tests/fixtures` enthält relevante Auszüge der bereitgestellten ifm-IODDs sowie eine JUMO-Variante zum Prüfen des Imports. Die ursprünglichen privaten Flow-Dateien, IP-Adressen und Seriennummern werden nicht mit dem Installationspaket verteilt.
 
 - Integrationsicon und Panel-Logo: von JS-DE-Tech bereitgestellte PNG in `custom_components/ifm_iolink/brand/icon.png` und `frontend/images/integration-icon.png`.
+- Die beiden Screenshots unter `docs/images/screenshots/` wurden von JS-DE-Tech bereitgestellt und zeigen die Portübersicht und Gerätebibliothek der Integration.
 - Die sieben Praxisfotos unter `docs/images/project/` wurden von JS-DE-Tech für die Projektbeschreibung bereitgestellt. Die JPEG-Bilddaten bleiben unverändert; EXIF/XMP/IPTC-Metadaten wurden bis auf die für die korrekte Darstellung benötigte Ausrichtung entfernt.
 - Die MIT-Lizenz gilt für den selbst erstellten Programmcode. Herstellerbilder, IODD-Auszüge, Logos und Praxisfotos werden dadurch nicht unter MIT neu lizenziert. Für eine Weiterverwendung gelten die Rechte der jeweiligen Urheber.

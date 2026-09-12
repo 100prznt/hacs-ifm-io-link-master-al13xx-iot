@@ -19,7 +19,7 @@ Im grafischen Command Center steht der Master in der Mitte. Seine Ports führen 
 **Ein Projekt von [JS-DE-Tech](https://github.com/JS-DE-Tech), entstanden aus einer realen Pool-, Heizungs- und Druckluftinstallation.**
 
 <p align="center">
-  <img src="docs/images/project/pool.jpeg" alt="Pooltechnik mit Filter, Durchflussmessung und ifm IO-Link-Master" width="900">
+  <img src="docs/images/screenshots/portuebersicht.png" alt="Command Center: AL1350 mit verbundenen Sensoren, Live-Messwerten und Portzuweisung" width="1100">
 </p>
 
 <p align="center"><a href="#funktionen">Funktionen</a> · <a href="#mein-praxisprojekt">Praxisprojekt</a> · <a href="#installation">Installation</a> · <a href="#parametersicherung--sensortausch">Parametersicherung</a> · <a href="#eigene-ger%C3%A4te--iodd-import">Eigene Geräte</a></p>
@@ -44,9 +44,23 @@ Im grafischen Command Center steht der Master in der Mitte. Seine Ports führen 
 
 Die laufende Messwerterfassung liest die Geräte. **Schreibzugriffe erfolgen bei einer ausdrücklich bestätigten Parameterwiederherstellung.** Master-Netzwerkeinstellungen und IO-Link-Portbetriebsart werden durch diese Integration nicht eingerichtet.
 
+## Ein Blick ins Command Center
+
+**Die Anlage auf einen Blick:** Die Portübersicht oben zeigt den AL1350 im Mittelpunkt, die angeschlossenen Sensoren und ihre aktuellen Messwerte. Ein Klick auf einen Port öffnet rechts die Gerätezuweisung, Standort und Verwendungszweck sowie Prozesswerte, Herstellerparameter und Sicherungsfunktionen. Der Screenshot stammt aus meiner laufenden Installation.
+
+**Einmal anlegen, mehrfach verwenden:** In der Gerätebibliothek stehen mitgelieferte und eigene Profile gemeinsam bereit. Hersteller-IODDs lassen sich importieren; im Profileditor können Geräteinformationen, Bilder und die Übersetzung der Rohdaten ergänzt und getestet werden. Anschließend lässt sich dasselbe Profil an mehreren Ports auswählen.
+
+<p align="center">
+  <img src="docs/images/screenshots/geraetebibliothek.png" alt="Gerätebibliothek mit BADU- und ifm-Profilen, IODD-Import und Editor für eigene Geräte" width="1100">
+</p>
+
 ## Mein Praxisprojekt
 
 Ich wollte meine Haustechnik nicht nur am Gerät ablesen, sondern Veränderungen rechtzeitig in Home Assistant erkennen. Ausgangspunkt waren bereits funktionierende Node-RED-Auswertungen. Daraus entstand eine eigenständige Integration mit einer gemeinsamen Oberfläche für die angeschlossenen IO-Link-Sensoren.
+
+<p align="center">
+  <img src="docs/images/project/pool.jpeg" alt="Pooltechnik mit Filter, Durchflussmessung und ifm IO-Link-Master" width="900">
+</p>
 
 ### Poolfilter: Reinigung nach Bedarf erkennen
 
