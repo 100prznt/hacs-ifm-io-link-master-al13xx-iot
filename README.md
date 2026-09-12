@@ -1,5 +1,7 @@
 # ifm IO-Link Command Center for Home Assistant
 
+**Deutsch** | [English](README.en.md)
+
 <p align="center">
   <img src="custom_components/ifm_iolink/brand/icon.png" alt="ifm IO-Link Projektlogo" width="100">
 </p>
