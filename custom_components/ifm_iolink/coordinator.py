@@ -9,7 +9,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .api import IfmError, data_value
-from .const import DEFAULT_INTERVAL, DOMAIN, PORT_PROPERTIES, port_path
+from .const import DEFAULT_INTERVAL, DOMAIN, MASTER_DIAGNOSTIC_PATHS, PORT_PROPERTIES, port_path
 from .decoder import decode
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,11 +28,12 @@ class IfmCoordinator(DataUpdateCoordinator):
         self.metadata = {}
         self.metadata_at = 0
         self.condition_values = {}
+        self.master_diagnostics = {}
         self.samples = {str(port): deque(maxlen=30) for port in range(1, identity["ports"] + 1)}
 
     async def _async_update_data(self):
         refresh_metadata = time.monotonic() - self.metadata_at >= 60
-        paths = []
+        paths = list(MASTER_DIAGNOSTIC_PATHS)
         for port in range(1, self.identity["ports"] + 1):
             paths.extend(port_path(port, name) for name in ("pdin", "status"))
             if refresh_metadata:
@@ -41,6 +42,7 @@ class IfmCoordinator(DataUpdateCoordinator):
             response = await self.client.multi(paths)
         except IfmError as err:
             raise UpdateFailed(str(err)) from err
+        self.master_diagnostics = self._diagnostics_from(response)
         now = dt_util.utcnow().isoformat()
         result = {}
         for port in range(1, self.identity["ports"] + 1):
@@ -109,6 +111,18 @@ class IfmCoordinator(DataUpdateCoordinator):
             self.metadata_at = time.monotonic()
         return result
 
+    @staticmethod
+    def _diagnostics_from(response):
+        """Master-level health values; ifm reports no direct power register, so it is derived from U x I."""
+        temperature = data_value(response, "/processdatamaster/temperature")
+        voltage_mv = data_value(response, "/processdatamaster/voltage")
+        current_ma = data_value(response, "/processdatamaster/current")
+        status = data_value(response, "/processdatamaster/supervisionstatus")
+        voltage = voltage_mv / 1000 if isinstance(voltage_mv, (int, float)) else None
+        current = current_ma / 1000 if isinstance(current_ma, (int, float)) else None
+        power = voltage * current if voltage is not None and current is not None else None
+        return {"temperature": temperature, "voltage": voltage, "current": current, "power": power, "status": status}
+
     def snapshot(self):
         return {
             "entry_id": self.entry.entry_id,
@@ -117,6 +131,7 @@ class IfmCoordinator(DataUpdateCoordinator):
             "online": self.last_update_success,
             "interval": self.entry.options.get("interval", DEFAULT_INTERVAL),
             "ports": self.data or {},
+            "diagnostics": self.master_diagnostics,
         }
 
     def diagnostic(self, port=None):

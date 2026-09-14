@@ -1,15 +1,24 @@
-"""Numeric process-data sensors and read-only manufacturer-parameter sensors."""
+"""Numeric process-data sensors, master diagnostics and read-only manufacturer-parameter sensors."""
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import EntityCategory
 
 from .decoder import parameter_entity_kind
-from .entity import IfmEntity, IfmParameterEntity
+from .entity import IfmEntity, IfmMasterEntity, IfmParameterEntity
+
+MASTER_DIAGNOSTICS = (
+    ("voltage", "Versorgungsspannung", "V", "voltage", 2),
+    ("power", "Leistungsaufnahme", "W", "power", 2),
+    ("temperature", "Temperatur", "°C", "temperature", 0),
+)
 
 
 async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = entry.runtime_data
-    entities = []
+    entities = [
+        IfmMasterSensor(coordinator, key, name, unit, device_class, precision)
+        for key, name, unit, device_class, precision in MASTER_DIAGNOSTICS
+    ]
     for port in range(1, coordinator.identity["ports"] + 1):
         assigned = entry.options.get("ports", {}).get(str(port), {}).get("profile")
         profile = coordinator.library.all.get(assigned, {})
@@ -37,6 +46,28 @@ class IfmSensor(IfmEntity, SensorEntity):
     @property
     def native_value(self):
         return self.port_data.get("values", {}).get(self.field["key"])
+
+
+class IfmMasterSensor(IfmMasterEntity, SensorEntity):
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_state_class = "measurement"
+
+    def __init__(self, coordinator, key, name, unit, device_class, precision):
+        super().__init__(coordinator, key, name)
+        self._attr_native_unit_of_measurement = unit
+        self._attr_device_class = device_class
+        self._attr_suggested_display_precision = precision
+
+    @property
+    def native_value(self):
+        return self.value
+
+    @property
+    def extra_state_attributes(self):
+        # ifm reports no direct power register; power is derived from voltage x current.
+        if self.key != "power":
+            return {}
+        return {"current_a": self.coordinator.master_diagnostics.get("current")}
 
 
 class IfmParameterSensor(IfmParameterEntity, SensorEntity):

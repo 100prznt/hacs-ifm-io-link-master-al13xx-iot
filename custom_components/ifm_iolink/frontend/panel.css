@@ -13,3 +13,5 @@
 .backup-actions{gap:16px}.backup-action>button,.backup-action>.button{width:100%;min-height:44px;display:flex;align-items:center;justify-content:center;text-align:center;margin:0;font-size:13px;padding:11px 14px}.backup-action>p{font-size:11px;line-height:1.55;margin:7px 2px 0}
 
 .parameter-entity-toggle{display:flex;flex-direction:column;align-items:center;gap:3px;margin:0;flex-shrink:0;padding-top:2px}.parameter-entity-toggle input{width:16px;height:16px;margin:0}.parameter-entity-toggle small{font-size:8px;letter-spacing:.4px;color:var(--muted)}.parameter-entity-save{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:14px}.parameter-entity-save p{margin:0;flex:1;min-width:160px}
+
+.master-diagnostics{font-size:11px;color:#526375;background:#eef2f5;border:1px solid var(--line);padding:8px 12px;border-radius:20px;white-space:nowrap}.master-diagnostics.problem{color:#a54132;background:#fceeea;border-color:#f2cfc9}@media(max-width:700px){.master-diagnostics{white-space:normal}}

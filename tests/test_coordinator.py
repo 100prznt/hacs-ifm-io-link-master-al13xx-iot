@@ -56,6 +56,7 @@ def instance(module, condition_value=0):
     class Client:
         fail = False
         device = 602
+        master = {}
 
         async def multi(self, paths):
             if self.fail:
@@ -73,6 +74,10 @@ def instance(module, condition_value=0):
                     path = port_path(port, name)
                     if path in paths:
                         result[path] = {"code": 200, "data": value}
+            for name, value in self.master.items():
+                path = f"/processdatamaster/{name}"
+                if path in paths:
+                    result[path] = {"code": 200, "data": value}
             return result
 
         async def request(self, path, data):
@@ -113,3 +118,28 @@ def test_diagnostics_redact_identity_and_bound_history(coordinator_module):
     result = c.diagnostic(1)
     assert len(result["ports"]["1"]["samples"]) == 30
     assert "PRIVATE" not in json.dumps(result)
+
+
+def test_master_diagnostics_are_converted_from_mv_and_ma(coordinator_module):
+    c, client = instance(coordinator_module)
+    client.master = {"temperature": 35, "voltage": 23878, "current": 123, "supervisionstatus": 0}
+    asyncio.run(c._async_update_data())
+    assert c.master_diagnostics["temperature"] == 35
+    assert c.master_diagnostics["voltage"] == pytest.approx(23.878)
+    assert c.master_diagnostics["current"] == pytest.approx(0.123)
+    assert c.master_diagnostics["power"] == pytest.approx(23.878 * 0.123)
+    assert c.master_diagnostics["status"] == 0
+
+
+def test_master_diagnostics_missing_paths_stay_none(coordinator_module):
+    c, _ = instance(coordinator_module)  # fake client does not serve /processdatamaster/*
+    asyncio.run(c._async_update_data())
+    assert c.master_diagnostics == {"temperature": None, "voltage": None, "current": None, "power": None, "status": None}
+
+
+def test_snapshot_exposes_master_diagnostics(coordinator_module):
+    c, client = instance(coordinator_module)
+    client.master = {"temperature": 22, "voltage": 24000, "current": 100, "supervisionstatus": 4}
+    asyncio.run(c._async_update_data())
+    assert c.snapshot()["diagnostics"] == c.master_diagnostics
+    assert c.snapshot()["diagnostics"]["status"] == 4

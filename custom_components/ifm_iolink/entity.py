@@ -68,6 +68,28 @@ class IfmEntity(CoordinatorEntity):
         }
 
 
+class IfmMasterEntity(CoordinatorEntity):
+    """A master-level diagnostic value (voltage, current, power, temperature, status)."""
+
+    _attr_has_entity_name = True
+
+    def __init__(self, coordinator, key, name):
+        super().__init__(coordinator)
+        self.key = key
+        serial = coordinator.identity["serial"]
+        self._attr_unique_id = f"{serial}_master_{key}"
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN, serial)})
+        self._attr_name = name
+
+    @property
+    def value(self):
+        return self.coordinator.master_diagnostics.get(self.key)
+
+    @property
+    def available(self):
+        return super().available and self.value is not None
+
+
 class IfmParameterEntity(CoordinatorEntity):
     """A manufacturer parameter, opted into per port in the panel's parameter list.
 

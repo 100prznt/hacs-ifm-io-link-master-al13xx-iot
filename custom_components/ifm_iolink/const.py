@@ -6,6 +6,12 @@ PLATFORMS = ["sensor", "binary_sensor", "number"]
 STATIC_URL = "/ifm_iolink_static"
 DEFAULT_INTERVAL = 2
 PORT_PROPERTIES = ("productname", "vendorid", "deviceid", "serial", "status", "applicationspecifictag")
+MASTER_DIAGNOSTIC_PATHS = (
+    "/processdatamaster/temperature",
+    "/processdatamaster/voltage",
+    "/processdatamaster/current",
+    "/processdatamaster/supervisionstatus",
+)
 
 
 def port_path(port: int, name: str) -> str:

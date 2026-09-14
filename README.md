@@ -36,6 +36,7 @@ Im grafischen Command Center steht der Master in der Mitte. Seine Ports führen 
 Gegenüber dem Original-Projekt von JS-DE-Tech ergänzt dieser Fork bisher:
 
 - **Parameter als Home-Assistant-Entity (ab 0.2.0):** Herstellerparameter lassen sich in der Parameterliste je Port gezielt auswählen und als eigene Entity anlegen – als `sensor` (nur lesend) oder, bei schreibbaren vollen Ganzzahlparametern, als `number` (auch aus Home Assistant heraus setzbar). Beide werden unabhängig vom schnellen Prozessdaten-Poll gelesen: beim Hinzufügen, nach jeder Änderung und stündlich. Details unter [Parameter als Home-Assistant-Entity](docs/device-profiles.md#parameter-als-home-assistant-entity).
+- **Master-Diagnose als Entity (ab 0.3.0):** Versorgungsspannung, Leistungsaufnahme (aus Spannung × Strom berechnet, da der Master selbst keinen Leistungswert liefert), Temperatur und Supervision-Status des Masters (AL1350/AL1352 selbst, nicht der angeschlossenen Sensoren) stehen als eigene `sensor`- bzw. `binary_sensor`-Entität zur Verfügung und werden zusätzlich als Kennzahl auf der Portübersicht angezeigt.
 
 ## Funktionen
 

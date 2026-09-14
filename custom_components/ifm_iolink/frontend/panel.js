@@ -45,7 +45,7 @@ class IfmIolinkPanel extends HTMLElement {
     const master=this.master;if(!master)return `<section class="empty"><h2>Dein erster IO-Link-Master</h2><p>Füge einen AL1350 oder AL1352 hinzu. Du kannst das lokale Netzwerk durchsuchen oder die IoT-Adresse direkt eintragen.</p><a class="primary button" href="/config/integrations/dashboard/add?domain=ifm_iolink">Master einrichten</a><p>Ein bereits eingerichteter Master erscheint hier, sobald er geladen ist.</p></section>`;
     const portCount=master.identity.ports;
     const rows=portCount/2;
-    return `<section class="section-heading"><div><span class="eyebrow">DEINE ANLAGE</span><h2>${esc(master.name)}</h2><p>${portCount} IO-Link-Ports · Aktualisierung alle ${master.interval} Sekunden</p></div><div class="master-tools"><span class="status" id="master-status"></span><button id="manage-master">Master verwalten</button></div></section>
+    return `<section class="section-heading"><div><span class="eyebrow">DEINE ANLAGE</span><h2>${esc(master.name)}</h2><p>${portCount} IO-Link-Ports · Aktualisierung alle ${master.interval} Sekunden</p></div><div class="master-tools"><span class="master-diagnostics" id="master-diagnostics" role="status"></span><span class="status" id="master-status"></span><button id="manage-master">Master verwalten</button></div></section>
     <div class="workspace"><section class="topology" aria-label="Master mit angeschlossenen Geräten"><div class="topology-grid" style="--rows:${rows}">
       <div class="master-device" style="grid-row:1 / ${rows+1}"><span class="master-model">${esc(master.identity.model)}</span><img src="${BASE}/images/${master.identity.model.toLowerCase()}.png" alt="ifm ${esc(master.identity.model)}"><span class="master-caption">IO-LINK MASTER</span></div>
       <svg class="wires" aria-hidden="true"></svg>${Array.from({length:portCount},(_,i)=>this.portCard(i+1)).join('')}</div><p class="topology-hint">Port auswählen, Gerät zuweisen, Messwerte ansehen.</p></section>
@@ -202,6 +202,19 @@ class IfmIolinkPanel extends HTMLElement {
   paint(){
     const master=this.master;if(!master)return;
     const el=this.shadowRoot.querySelector('#master-status');if(el){el.textContent=master.online?'● Master verbunden':'○ Master nicht erreichbar';el.classList.toggle('offline',!master.online);}
+    const diag=this.shadowRoot.querySelector('#master-diagnostics');
+    if(diag){
+      const d=master.diagnostics || {};
+      const problem=!!d.status;
+      const parts=[];
+      if(d.temperature!=null)parts.push(`${d.temperature} °C`);
+      if(d.voltage!=null)parts.push(`${d.voltage.toFixed(1)} V`);
+      if(d.power!=null)parts.push(`${d.power.toFixed(1)} W`);
+      parts.push(problem?`⚠ Störung (Code ${d.status})`:'✓ Status ok');
+      diag.textContent=master.online?parts.join(' · '):'';
+      diag.classList.toggle('problem',master.online && problem);
+      diag.hidden=!master.online;
+    }
     this.shadowRoot.querySelectorAll('[data-value]').forEach(e=>{const [port,key]=e.dataset.value.split(':');const item=master.ports[port];const field=this.profile(item?.profile)?.fields.find(f=>f.key===key);if(field)e.textContent=formatValue(master.online&&item.connected&&!item.error?item.values[key]:null,field);});
     this.shadowRoot.querySelectorAll('[data-status]').forEach(e=>{const item=master.ports[e.dataset.status];const online=master.online&&item?.connected;e.textContent=online?'● Verbunden':'○ Offline';e.classList.toggle('offline',!online);});
     const raw=this.shadowRoot.querySelector('#raw');if(raw)raw.textContent=this.selected?.raw || 'Keine Prozessdaten';
