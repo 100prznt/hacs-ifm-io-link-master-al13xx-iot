@@ -44,8 +44,9 @@ Im grafischen Command Center steht der Master in der Mitte. Seine Ports führen 
 | **Parameter gezielt lesen** | Einzelne Werte oder alle im Profil hinterlegten Herstellerparameter auf Knopfdruck abfragen. |
 | **Sichern und wiederherstellen** | Parametersicherung am Port, JSON-Export/-Import, geprüfte Vorschau und Protokoll des Wiederherstellungsversuchs. |
 | **Home-Assistant-Entitäten** | Sensoren und binäre Sensoren für Messwerte und Zustände; damit eigene Diagramme, Meldungen und Automationen erstellen. |
+| **Parameter als Entity** | In der Parameterliste je Port gezielt Herstellerparameter auswählen; daraus entsteht eine eigene `sensor`-Entity (nur lesend) oder – bei schreibbaren Ganzzahlparametern – eine `number`-Entity, die sich auch aus Home Assistant heraus setzen lässt. |
 
-Die laufende Messwerterfassung liest die Geräte. **Schreibzugriffe erfolgen bei einer ausdrücklich bestätigten Parameterwiederherstellung.** Master-Netzwerkeinstellungen und IO-Link-Portbetriebsart werden durch diese Integration nicht eingerichtet.
+Die laufende Messwerterfassung liest die Geräte. Als Entity ausgewählte Herstellerparameter werden beim Start, nach jeder Änderung und stündlich gelesen. **Darüber hinaus erfolgen Schreibzugriffe nur bei einer ausdrücklich bestätigten Parameterwiederherstellung oder beim Setzen einer Parameter-`number`-Entity.** Master-Netzwerkeinstellungen und IO-Link-Portbetriebsart werden durch diese Integration nicht eingerichtet.
 
 ## Ein Blick ins Command Center
 

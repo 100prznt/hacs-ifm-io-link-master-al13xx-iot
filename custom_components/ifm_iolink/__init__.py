@@ -34,7 +34,7 @@ async def async_setup(hass, config):
         webcomponent_name="ifm-iolink-panel",
         sidebar_title="ifm IO-Link",
         sidebar_icon="mdi:lan-connect",
-        module_url=f"{STATIC_URL}/panel.js?v=0.1.3",
+        module_url=f"{STATIC_URL}/panel.js?v=0.2.0",
         require_admin=True,
     )
     return True
@@ -72,9 +72,14 @@ async def async_setup_entry(hass, entry):
     for port in range(1, identity["ports"] + 1):
         prefix = f"{identity['serial']}_port_{port}_"
         expected.add(prefix + "connection")
-        profile_id = entry.options.get("ports", {}).get(str(port), {}).get("profile", "unknown")
+        assignment = entry.options.get("ports", {}).get(str(port), {})
+        profile_id = assignment.get("profile", "unknown")
         profile = coordinator.library.all.get(profile_id, {})
         expected.update(prefix + profile_id + "_" + field["key"] for field in profile.get("fields", []))
+        parameter_indices = {p["index"] for p in profile.get("parameters", [])}
+        expected.update(
+            f"{prefix}{profile_id}_param_{index}" for index in assignment.get("entities", []) if index in parameter_indices
+        )
     registry = er.async_get(hass)
     for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
         if entity.platform == DOMAIN and entity.unique_id not in expected:

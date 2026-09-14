@@ -23,6 +23,7 @@ def register_commands(hass):
     for command in (
         snapshot,
         assign,
+        set_parameter_entities,
         save_profile,
         delete_profile,
         debug,
@@ -88,9 +89,46 @@ async def assign(hass, connection, message):
         for name in ("name", "location", "purpose"):
             if len(message[name]) > 500:
                 raise ValueError("Metadaten dürfen höchstens 500 Zeichen enthalten")
+        current = coordinator.entry.options.get("ports", {}).get(str(message["port"]), {})
+        # Selected parameter entities are profile-specific; drop them if the profile changes.
+        entities = current.get("entities", []) if current.get("profile") == message["profile"] else []
         ports = {
             **coordinator.entry.options.get("ports", {}),
-            str(message["port"]): {key: message[key].strip() for key in ("profile", "name", "location", "purpose")},
+            str(message["port"]): {
+                **{key: message[key].strip() for key in ("profile", "name", "location", "purpose")},
+                "entities": entities,
+            },
+        }
+        hass.config_entries.async_update_entry(coordinator.entry, options={**coordinator.entry.options, "ports": ports})
+        connection.send_result(message["id"], {"saved": True})
+    except ValueError as err:
+        connection.send_error(message["id"], "invalid_input", str(err))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "ifm_iolink/set_parameter_entities",
+        vol.Required("entry_id"): str,
+        vol.Required("port"): int,
+        vol.Required("indices"): [int],
+    }
+)
+@websocket_api.require_admin
+@websocket_api.async_response
+async def set_parameter_entities(hass, connection, message):
+    try:
+        coordinator = coordinator_for(hass, message)
+        assignment = coordinator.entry.options.get("ports", {}).get(str(message["port"]), {})
+        profile = coordinator.library.all.get(assignment.get("profile"))
+        if not profile:
+            raise ValueError("Dem Port ist kein Profil zugewiesen")
+        available = {p["index"] for p in profile.get("parameters", [])}
+        indices = sorted({int(index) for index in message["indices"]})
+        if len(indices) > 256 or any(index not in available for index in indices):
+            raise ValueError("Ungültige Parameterauswahl")
+        ports = {
+            **coordinator.entry.options.get("ports", {}),
+            str(message["port"]): {**assignment, "entities": indices},
         }
         hass.config_entries.async_update_entry(coordinator.entry, options={**coordinator.entry.options, "ports": ports})
         connection.send_result(message["id"], {"saved": True})

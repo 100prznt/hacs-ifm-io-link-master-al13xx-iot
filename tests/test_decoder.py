@@ -5,7 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from custom_components.ifm_iolink.decoder import decode, validate_profile
+from custom_components.ifm_iolink.decoder import (
+    decode,
+    encode_parameter,
+    numeric_range,
+    parameter_entity_kind,
+    validate_profile,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -123,3 +129,42 @@ def test_reject_unsafe_images(image):
     p["image"] = image
     with pytest.raises(ValueError):
         validate_profile(p)
+
+
+def parameter(name, index):
+    return next(p for p in profile(name)["parameters"] if p["index"] == index)
+
+
+def test_parameter_entity_kind_writable_full_byte_int_is_number():
+    p = parameter("pn7096_default", 500)  # rw UIntegerT, 1 full byte
+    assert parameter_entity_kind(p) == "number"
+    p = parameter("pn7096_default", 583)  # rw IntegerT, 2 full bytes, scaled
+    assert parameter_entity_kind(p) == "number"
+
+
+def test_parameter_entity_kind_read_only_is_sensor():
+    assert parameter_entity_kind(parameter("pn7096_default", 560)) == "sensor"  # ro
+
+
+def test_parameter_entity_kind_without_trivial_decoder_is_sensor():
+    assert parameter_entity_kind(parameter("pn7096_default", 552)) == "sensor"  # RecordT, no decoder
+    p = copy.deepcopy(parameter("pn7096_default", 500))
+    p["decoder"]["fields"][0]["shift"] = 1  # partial-byte field
+    p["decoder"]["fields"][0]["bits"] = 7
+    assert parameter_entity_kind(p) == "sensor"
+
+
+def test_encode_parameter_round_trips_and_matches_numeric_range():
+    p = parameter("pn7096_default", 583)  # scale 0.01, signed 16 bit
+    lo, hi = numeric_range(p["decoder"]["fields"][0])
+    assert (lo, hi) == (-327.68, 327.67)
+    raw = encode_parameter(p, 1.23)
+    assert decode(p["decoder"], raw)["value"] == 1.23
+
+
+def test_encode_parameter_rejects_out_of_range_and_non_writable():
+    p = parameter("pn7096_default", 500)  # 0..255
+    with pytest.raises(ValueError):
+        encode_parameter(p, 256)
+    with pytest.raises(ValueError):
+        encode_parameter(parameter("pn7096_default", 560), 1)  # read-only

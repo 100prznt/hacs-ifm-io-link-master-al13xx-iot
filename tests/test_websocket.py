@@ -91,6 +91,7 @@ def test_existing_masters_load_in_panel(ws, include_profiles):
     [
         "snapshot",
         "assign",
+        "set_parameter_entities",
         "save_profile",
         "delete_profile",
         "debug",
@@ -202,3 +203,69 @@ def test_restore_confirmation_bound_to_preview(ws, monkeypatch, issue):
     assert len(executed) == (1 if issue in ("valid", "replay") else 0)
     assert bool(errors) == (issue != "valid")
     assert not backups.busy
+
+
+def test_assign_preserves_entities_for_same_profile_and_resets_on_change(ws):
+    entry = SimpleNamespace(
+        options={"ports": {"1": {"profile": "profA", "name": "", "location": "", "purpose": "", "entities": [10, 20]}}}
+    )
+    coordinator = SimpleNamespace(
+        entry=entry, identity={"ports": 4}, library=SimpleNamespace(all={"profA": {}, "profB": {}})
+    )
+    updates = []
+    hass = SimpleNamespace(
+        tasks=[],
+        data={"ifm_iolink": {"coordinators": {"entry1": coordinator}, "parameter_backups": SimpleNamespace(busy=set())}},
+        config_entries=SimpleNamespace(async_update_entry=lambda entry, options: updates.append(options)),
+    )
+    connection = SimpleNamespace(user=SimpleNamespace(is_admin=True), send_result=lambda *a: None, send_error=lambda *a: None)
+
+    async def call(profile):
+        ws.assign(
+            hass,
+            connection,
+            {"id": 1, "entry_id": "entry1", "port": 1, "profile": profile, "name": "", "location": "", "purpose": ""},
+        )
+        await asyncio.gather(*hass.tasks)
+        hass.tasks.clear()
+
+    async def run():
+        await call("profA")
+        assert updates[-1]["ports"]["1"]["entities"] == [10, 20]
+        await call("profB")
+        assert updates[-1]["ports"]["1"]["entities"] == []
+
+    asyncio.run(run())
+
+
+def test_set_parameter_entities_validates_indices_against_profile(ws):
+    entry = SimpleNamespace(options={"ports": {"1": {"profile": "profA"}}})
+    profile = {"id": "profA", "parameters": [{"index": 10}, {"index": 20}]}
+    coordinator = SimpleNamespace(entry=entry, identity={"ports": 4}, library=SimpleNamespace(all={"profA": profile}))
+    updates = []
+    hass = SimpleNamespace(
+        tasks=[],
+        data={"ifm_iolink": {"coordinators": {"entry1": coordinator}}},
+        config_entries=SimpleNamespace(async_update_entry=lambda entry, options: updates.append(options)),
+    )
+    results, errors = [], []
+    connection = SimpleNamespace(
+        user=SimpleNamespace(is_admin=True),
+        send_result=lambda *a: results.append(a),
+        send_error=lambda *a: errors.append(a),
+    )
+
+    async def call(indices):
+        ws.set_parameter_entities(hass, connection, {"id": 1, "entry_id": "entry1", "port": 1, "indices": indices})
+        await asyncio.gather(*hass.tasks)
+        hass.tasks.clear()
+
+    async def run():
+        await call([20, 10])
+        assert not errors
+        assert updates[-1]["ports"]["1"]["entities"] == [10, 20]
+        await call([10, 99])
+        assert errors
+        assert updates[-1]["ports"]["1"]["entities"] == [10, 20]  # unchanged: the invalid request was rejected
+
+    asyncio.run(run())

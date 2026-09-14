@@ -241,3 +241,45 @@ def decode(profile: dict, hex_data: str) -> dict:
             value = round(value, field.get("precision", 3)) if math.isfinite(value) else None
         result[field["key"]] = value
     return result
+
+
+def parameter_entity_kind(parameter: dict) -> str:
+    """'number' for a writable, full-byte integer parameter; 'sensor' for everything else."""
+    decoder = parameter.get("decoder")
+    if not decoder or len(decoder.get("fields", [])) != 1:
+        return "sensor"
+    field = decoder["fields"][0]
+    if field["type"] not in ("uint", "int") or parameter.get("access") != "rw":
+        return "sensor"
+    size = field.get("length", TYPES[field["type"]] or 1)
+    trivial = field.get("offset", 0) == 0 and field.get("shift", 0) == 0 and field.get("bits", size * 8) == size * 8
+    return "number" if trivial else "sensor"
+
+
+def numeric_range(field: dict) -> tuple[float, float]:
+    """Value bounds for a full-byte int/uint field, after scale and add."""
+    size = field.get("length", TYPES[field["type"]] or 1)
+    bits = field.get("bits", size * 8)
+    scale = field.get("scale", 1)
+    add = field.get("add", 0)
+    lo, hi = (-(1 << (bits - 1)), (1 << (bits - 1)) - 1) if field["type"] == "int" else (0, (1 << bits) - 1)
+    bounds = (lo * scale + add, hi * scale + add)
+    return min(bounds), max(bounds)
+
+
+def encode_parameter(parameter: dict, value) -> str:
+    """Encode a number into the raw hex for a writable full-byte int/uint parameter."""
+    if parameter_entity_kind(parameter) != "number":
+        raise ValueError("Parameter unterstützt keine Zahlenkodierung")
+    if type(value) not in (int, float) or not math.isfinite(value):
+        raise ValueError("Ungültiger Zahlenwert")
+    field = parameter["decoder"]["fields"][0]
+    size = field.get("length", TYPES[field["type"]] or 1)
+    scale = field.get("scale", 1)
+    add = field.get("add", 0)
+    raw = round((value - add) / scale) if scale else int(value)
+    bits = size * 8
+    lo, hi = (-(1 << (bits - 1)), (1 << (bits - 1)) - 1) if field["type"] == "int" else (0, (1 << bits) - 1)
+    if not lo <= raw <= hi:
+        raise ValueError("Wert außerhalb des zulässigen Bereichs")
+    return raw.to_bytes(size, field.get("endian", "big"), signed=(field["type"] == "int")).hex().upper()

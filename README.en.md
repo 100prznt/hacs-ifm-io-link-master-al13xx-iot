@@ -44,8 +44,9 @@ The graphical Command Center places the master at the centre, with connections t
 | **Read device parameters** | Read individual values or all manufacturer parameters defined in the profile at the click of a button. |
 | **Backup and restore** | Store parameter backups per port, export/import JSON, review a restore preview and download the restore report. |
 | **Home Assistant entities** | Sensors and binary sensors for measurements and status, ready for your own charts, notifications and automations. |
+| **Parameters as entities** | Pick individual manufacturer parameters per port in the parameter list; each becomes its own `sensor` (read-only) or, for writable integer parameters, `number` entity you can also set from Home Assistant. |
 
-Routine measurement polling reads the devices. **Write operations take place during an explicitly confirmed parameter restore.** The integration does not configure master network settings or IO-Link port operating modes.
+Routine measurement polling reads the devices. Manufacturer parameters selected as entities are read on startup, after every change and once an hour. **Writes otherwise only happen during an explicitly confirmed parameter restore, or when you set a parameter's `number` entity.** The integration does not configure master network settings or IO-Link port operating modes.
 
 ## A look inside the Command Center
 

@@ -36,6 +36,10 @@ Ein Profil ist eine JSON-Datenbeschreibung. Es wird weder mit `eval` noch als Py
 - `conditions`: optionale Liste aus `{"index": 64, "value": 0}`. Der Index wird über IO-Link nur gelesen; ein abweichender Wert sperrt die Dekodierung.
 - `parameters`: optionale herstellerspezifische Parameterliste mit Index, Name, Beschreibung und bei unterstützten Typen einem eigenen Decoder. Werte werden im Panel gezielt einzeln gelesen; komplexe Records bleiben als Rohwert zugänglich.
 
+## Parameter als Home-Assistant-Entity
+
+Unter **Parameterliste anzeigen** lässt sich je Port pro Parameter eine Checkbox aktivieren, um ihn als eigene Entity anzulegen; **Auswahl als Entity speichern** persistiert die Auswahl und lädt den Master neu. Ein Parameter mit `access: "rw"` und einem Decoder aus genau einem vollen Byte-Feld vom Typ `uint`/`int` (kein `shift`/Teil-Byte) wird zu einer `number`-Entity, die sich aus Home Assistant heraus setzen lässt; alle übrigen Parameter (Nur-Lese-Zugriff, `StringT`, `RecordT`, `ArrayT` oder Teil-Byte-Felder) werden zu einer nur lesenden `sensor`-Entity. Beide lesen den Wert per acyclic Read (`iolreadacyclic`) unabhängig vom schnellen Prozessdaten-Poll: beim Hinzufügen, nach jedem Schreibvorgang und danach stündlich. Ändert sich das zugewiesene Profil eines Ports, wird die Auswahl zurückgesetzt, da Parameterindizes profilspezifisch sind.
+
 Im ZIP enthaltene PNG/JPEG-Bilder werden als lokale Daten-URL gespeichert. Alternativ: HTTPS-URL, `/local/`-Pfad oder PNG/JPEG/WebP-Upload. Eigene Profil-IDs beginnen mit `custom_`. Mitgelieferte Profile werden im Editor als eigene Kopie geöffnet.
 
 ## Unbekanntes Gerät
