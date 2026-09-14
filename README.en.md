@@ -29,6 +29,14 @@ The graphical Command Center places the master at the centre, with connections t
 
 > **Version 0.1.3:** First public test release. AL1350, PN7094, PN7096 and BADU FlowSonic Plus have been checked on a real installation running Home Assistant 2026.8.3. AL1352 support is implemented but has not yet been tested on physical hardware. The Command Center interface is currently in German; this README provides English documentation.
 
+> 🔀 **This is a fork.** This repository is a fork of [JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot), maintained by [100prznt](https://github.com/100prznt). It includes additional changes made in this fork on top of the original – see [Changes in this fork](#changes-in-this-fork).
+
+## Changes in this fork
+
+Compared to the original project by JS-DE-Tech, this fork so far adds:
+
+- **Parameters as Home Assistant entities (from 0.2.0):** manufacturer parameters can be opted into per port in the parameter list, each becoming its own entity – a `sensor` (read-only) or, for writable full-byte integer parameters, a `number` entity you can also set from Home Assistant. Both read independently of the fast process-data poll: on startup, after every change, and hourly. See [Parameters as a Home Assistant entity](docs/device-profiles.md#parameter-als-home-assistant-entity) for details.
+
 ## Features
 
 | Feature | What it offers |
