@@ -4,6 +4,7 @@ import asyncio
 import importlib
 import json
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
@@ -57,6 +58,8 @@ def instance(module, condition_value=0):
         fail = False
         device = 602
         master = {}
+        mode = 3
+        pdout = "01"
 
         async def multi(self, paths):
             if self.fail:
@@ -70,10 +73,14 @@ def instance(module, condition_value=0):
                     "deviceid": self.device,
                     "serial": "PRIVATE SERIAL",
                     "applicationspecifictag": "PRIVATE TAG",
+                    "pdout": self.pdout,
                 }.items():
                     path = port_path(port, name)
                     if path in paths:
                         result[path] = {"code": 200, "data": value}
+                mode_path = f"/iolinkmaster/port[{port}]/mode"
+                if mode_path in paths:
+                    result[mode_path] = {"code": 200, "data": self.mode}
             for name, value in self.master.items():
                 path = f"/processdatamaster/{name}"
                 if path in paths:
@@ -129,6 +136,26 @@ def test_master_diagnostics_are_converted_from_mv_and_ma(coordinator_module):
     assert c.master_diagnostics["current"] == pytest.approx(0.123)
     assert c.master_diagnostics["power"] == pytest.approx(23.878 * 0.123)
     assert c.master_diagnostics["status"] == 0
+
+
+def test_port_mode_is_read_once_and_persists_between_metadata_refreshes(coordinator_module):
+    c, client = instance(coordinator_module)
+    client.mode = 2
+    result = asyncio.run(c._async_update_data())
+    assert result["1"]["mode"] == 2
+    client.mode = 3  # a later poll cycle skips the metadata read; the stale value must survive
+    c.metadata_at = time.monotonic()
+    result = asyncio.run(c._async_update_data())
+    assert result["1"]["mode"] == 2
+
+
+def test_pdout_is_only_read_and_exposed_for_ports_switched_to_do(coordinator_module):
+    c, client = instance(coordinator_module)
+    c.entry.options["ports"]["1"]["mode"] = 2
+    client.pdout = "01"
+    result = asyncio.run(c._async_update_data())
+    assert result["1"]["pdout"] == "01"
+    assert result["2"]["pdout"] is None  # port 2 was never switched to DO
 
 
 def test_master_diagnostics_missing_paths_stay_none(coordinator_module):

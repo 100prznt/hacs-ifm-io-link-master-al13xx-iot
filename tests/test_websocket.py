@@ -105,6 +105,8 @@ def test_existing_masters_load_in_panel(ws, include_profiles):
         "preview_restore",
         "restore_parameters",
         "get_restore_report",
+        "preview_port_mode",
+        "set_port_mode",
     ],
 )
 @pytest.mark.parametrize("user", [None, SimpleNamespace(is_admin=False)])
@@ -236,6 +238,93 @@ def test_assign_preserves_entities_for_same_profile_and_resets_on_change(ws):
         assert updates[-1]["ports"]["1"]["entities"] == []
 
     asyncio.run(run())
+
+
+def test_preview_port_mode_then_set_port_mode_updates_entry_options(ws):
+    entry = SimpleNamespace(options={"ports": {"1": {"profile": "prof", "name": "Sensor"}}})
+    coordinator = SimpleNamespace(
+        entry=entry,
+        identity={"ports": 4},
+        data={"1": {"mode": 3, "connected": True, "assignment": {"name": "Sensor"}, "profile": "prof"}},
+        condition_values={(1, "prof", 64): 0},
+        metadata_at=1,
+    )
+
+    async def write_port_mode(port, mode):
+        coordinator.data["1"]["mode"] = mode
+
+    async def multi(paths):
+        return {p: {"code": 200, "data": coordinator.data["1"]["mode"]} for p in paths}
+
+    coordinator.client = SimpleNamespace(write_port_mode=write_port_mode, multi=multi)
+    updates = []
+    hass = SimpleNamespace(
+        tasks=[],
+        data={
+            "ifm_iolink": {
+                "coordinators": {"entry1": coordinator},
+                "parameter_backups": SimpleNamespace(busy=set(), plans={}),
+            }
+        },
+        config_entries=SimpleNamespace(async_update_entry=lambda entry, options: updates.append(options)),
+    )
+    results, errors = [], []
+    connection = SimpleNamespace(
+        user=SimpleNamespace(is_admin=True, id="admin"),
+        send_result=lambda *a: results.append(a),
+        send_error=lambda *a: errors.append(a),
+    )
+
+    async def run():
+        ws.preview_port_mode(hass, connection, {"id": 1, "entry_id": "entry1", "port": 1, "target_mode": 2})
+        await asyncio.gather(*hass.tasks)
+        hass.tasks.clear()
+        token = results[0][1]["token"]
+        ws.set_port_mode(hass, connection, {"id": 2, "entry_id": "entry1", "port": 1, "token": token, "confirm": True})
+        await asyncio.gather(*hass.tasks)
+
+    asyncio.run(run())
+    assert not errors
+    assert (results[0][1]["current_mode"], results[0][1]["target_mode"]) == (3, 2)
+    assert results[-1][1] == {"port": 1, "mode": 2}
+    saved = updates[-1]["ports"]["1"]
+    assert saved["mode"] == 2
+    assert saved["profile"] == "unknown"  # a DO port cannot decode IO-Link process data
+    assert saved["name"] == "Sensor"  # unrelated metadata is preserved
+    assert not hass.data["ifm_iolink"]["parameter_backups"].plans  # single-use token
+
+
+def test_port_mode_and_restore_tokens_are_not_interchangeable(ws):
+    import time
+
+    coordinator = object()
+    backups = SimpleNamespace(
+        busy=set(),
+        plans={
+            "restore-token": {
+                "expires": time.monotonic() + 300,
+                "user": "admin",
+                "key": ("entry", 1),
+                "coordinator": coordinator,
+                "plan": {},
+            }
+        },
+    )
+    hass = SimpleNamespace(
+        tasks=[], data={"ifm_iolink": {"parameter_backups": backups, "coordinators": {"entry": coordinator}}}
+    )
+    errors = []
+    connection = SimpleNamespace(
+        user=SimpleNamespace(is_admin=True, id="admin"), send_result=lambda *a: None, send_error=lambda *a: errors.append(a)
+    )
+
+    async def run():
+        ws.set_port_mode(hass, connection, {"id": 1, "entry_id": "entry", "port": 1, "token": "restore-token", "confirm": True})
+        await asyncio.gather(*hass.tasks)
+
+    asyncio.run(run())
+    assert errors
+    assert "restore-token" in backups.plans  # rejected before being consumed
 
 
 def test_set_parameter_entities_validates_indices_against_profile(ws):

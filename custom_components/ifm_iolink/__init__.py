@@ -34,7 +34,7 @@ async def async_setup(hass, config):
         webcomponent_name="ifm-iolink-panel",
         sidebar_title="ifm IO-Link",
         sidebar_icon="mdi:lan-connect",
-        module_url=f"{STATIC_URL}/panel.js?v=0.4.2",
+        module_url=f"{STATIC_URL}/panel.js?v=0.5.0",
         require_admin=True,
     )
     return True
@@ -74,6 +74,8 @@ async def async_setup_entry(hass, entry):
         expected.add(prefix + "connection")
         expected.add(prefix + "pin2")
         assignment = entry.options.get("ports", {}).get(str(port), {})
+        if assignment.get("mode") == 2:
+            expected.add(prefix + "pin4_do")
         profile_id = assignment.get("profile", "unknown")
         profile = coordinator.library.all.get(profile_id, {})
         expected.update(prefix + profile_id + "_" + field["key"] for field in profile.get("fields", []))

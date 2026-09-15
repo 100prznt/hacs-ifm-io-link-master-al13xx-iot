@@ -16,6 +16,7 @@ from .const import DOMAIN
 from .decoder import decode, validate_profile
 from .iodd import import_iodd
 from .parameters import collect_parameters, read_parameter_value
+from .port_mode import execute_mode_change, prepare_mode_change
 from .restore import execute_restore, prepare_restore
 
 
@@ -37,6 +38,8 @@ def register_commands(hass):
         preview_restore,
         restore_parameters,
         get_restore_report,
+        preview_port_mode,
+        set_port_mode,
     ):
         websocket_api.async_register_command(hass, command)
 
@@ -424,6 +427,7 @@ async def restore_parameters(hass, connection, message):
         if (
             not message["confirm"]
             or not saved
+            or "plan" not in saved
             or saved["expires"] <= time.monotonic()
             or saved["user"] != connection.user.id
             or saved["key"] != key
@@ -463,3 +467,93 @@ async def get_restore_report(hass, connection, message):
         connection.send_result(message["id"], {"report": report})
     except ValueError as err:
         connection.send_error(message["id"], "invalid_input", str(err))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "ifm_iolink/preview_port_mode",
+        vol.Required("entry_id"): str,
+        vol.Required("port"): int,
+        vol.Required("target_mode"): int,
+    }
+)
+@websocket_api.require_admin
+@websocket_api.async_response
+async def preview_port_mode(hass, connection, message):
+    backups = hass.data[DOMAIN]["parameter_backups"]
+    key = (message["entry_id"], message["port"])
+    if key in backups.busy:
+        connection.send_error(message["id"], "busy", "Parameteraktion an diesem Port läuft bereits")
+        return
+    backups.busy.add(key)
+    try:
+        coordinator = coordinator_for(hass, message)
+        plan = await prepare_mode_change(coordinator, message["port"], message["target_mode"])
+        backups.plans = {token: value for token, value in backups.plans.items() if value["expires"] > time.monotonic()}
+        if len(backups.plans) >= 16:
+            raise ValueError("Zu viele offene Vorschauen; später erneut versuchen")
+        token = secrets.token_urlsafe(24)
+        backups.plans[token] = {
+            "expires": time.monotonic() + 300,
+            "user": connection.user.id,
+            "key": key,
+            "coordinator": coordinator,
+            "mode_plan": plan,
+        }
+        connection.send_result(message["id"], {"token": token, "expires_in": 300, **plan})
+    except (ValueError, IfmError) as err:
+        connection.send_error(message["id"], "port_mode_preview_failed", str(err))
+    finally:
+        backups.busy.discard(key)
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "ifm_iolink/set_port_mode",
+        vol.Required("entry_id"): str,
+        vol.Required("port"): int,
+        vol.Required("token"): str,
+        vol.Required("confirm"): bool,
+    }
+)
+@websocket_api.require_admin
+@websocket_api.async_response
+async def set_port_mode(hass, connection, message):
+    backups = hass.data[DOMAIN]["parameter_backups"]
+    key = (message["entry_id"], message["port"])
+    if key in backups.busy:
+        connection.send_error(message["id"], "busy", "Parameteraktion an diesem Port läuft bereits")
+        return
+    backups.busy.add(key)
+    try:
+        saved = backups.plans.get(message["token"])
+        if (
+            not message["confirm"]
+            or not saved
+            or "mode_plan" not in saved
+            or saved["expires"] <= time.monotonic()
+            or saved["user"] != connection.user.id
+            or saved["key"] != key
+        ):
+            raise ValueError("Bestätigung fehlt oder Vorschau ist abgelaufen; neue Vorschau erstellen")
+        coordinator = coordinator_for(hass, message)
+        if coordinator is not saved["coordinator"]:
+            raise ValueError("Master wurde seit der Vorschau neu geladen")
+        backups.plans.pop(message["token"])
+        result = await execute_mode_change(
+            coordinator,
+            message["port"],
+            saved["mode_plan"],
+            still_current=lambda: hass.data[DOMAIN]["coordinators"].get(key[0]) is coordinator,
+        )
+        ports = {**coordinator.entry.options.get("ports", {})}
+        updated = {**ports.get(str(message["port"]), {}), "mode": result["mode"]}
+        if result["mode"] == 2:
+            updated["profile"], updated["entities"] = "unknown", []
+        ports[str(message["port"])] = updated
+        hass.config_entries.async_update_entry(coordinator.entry, options={**coordinator.entry.options, "ports": ports})
+        connection.send_result(message["id"], result)
+    except (ValueError, IfmError) as err:
+        connection.send_error(message["id"], "port_mode_failed", str(err))
+    finally:
+        backups.busy.discard(key)

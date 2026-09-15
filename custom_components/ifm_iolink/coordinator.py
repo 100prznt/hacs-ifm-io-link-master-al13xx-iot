@@ -37,8 +37,11 @@ class IfmCoordinator(DataUpdateCoordinator):
         for port in range(1, self.identity["ports"] + 1):
             paths.extend(port_path(port, name) for name in ("pdin", "status"))
             paths.append(f"/iolinkmaster/port[{port}]/pin2in")
+            if self.entry.options.get("ports", {}).get(str(port), {}).get("mode") == 2:
+                paths.append(port_path(port, "pdout"))
             if refresh_metadata:
                 paths.extend(port_path(port, name) for name in PORT_PROPERTIES if name != "status")
+                paths.append(f"/iolinkmaster/port[{port}]/mode")
         try:
             response = await self.client.multi(paths)
         except IfmError as err:
@@ -53,6 +56,7 @@ class IfmCoordinator(DataUpdateCoordinator):
                 identity.update(
                     {name: data_value(response, port_path(port, name)) for name in PORT_PROPERTIES if name != "status"}
                 )
+                identity["mode"] = data_value(response, f"/iolinkmaster/port[{port}]/mode")
             status = data_value(response, port_path(port, "status"))
             identity["status"] = status
             raw = data_value(response, port_path(port, "pdin"))
@@ -92,6 +96,8 @@ class IfmCoordinator(DataUpdateCoordinator):
                 "identity": dict(identity),
                 "raw": raw,
                 "pin2": data_value(response, f"/iolinkmaster/port[{port}]/pin2in"),
+                "mode": identity.get("mode"),
+                "pdout": data_value(response, port_path(port, "pdout")) if assignment.get("mode") == 2 else None,
                 "connected": connected,
                 "profile": profile_id,
                 "assignment": assignment,

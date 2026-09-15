@@ -1,6 +1,6 @@
 # Pin 2 als Digitaleingang + Portmodus-Umschaltung (Pin 4)
 
-Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Teil 1 ist umgesetzt (ab Version 0.4.0, Bugfix in 0.4.2), Teil 2 ist offen.
+Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Teil 1 ist umgesetzt (ab Version 0.4.0, Bugfix in 0.4.2). Teil 2 ist ab 0.5.0 vollständig umgesetzt (Backend, Websocket-Commands, Panel-Vorschau/Bestätigung, `switch`-Plattform für den DO-Ausgangszustand), siehe Abschnitt "Stand nach 0.5.0" unten.
 
 ## Context
 
@@ -60,6 +60,29 @@ Folgt strukturell exakt dem bestehenden Parameter-Restore-Flow (`restore.py` + `
 
 **Frontend (`custom_components/ifm_iolink/frontend/panel.js`)**
 - Im Inspector (Bereich analog zu „Sensortausch & Sicherung“) ein neues `<details>` „Portmodus“ mit: aktuellem Modus, einer Auswahl (IO-Link / Digitalausgang), einem Hinweistext bei aktuell verbundenem Sensor, und demselben Vorschau→Bestätigen-Dialogmuster wie `previewRestore()` – neue Methode `previewPortMode()` ruft `preview_port_mode`, öffnet einen `<dialog>` mit Warnung + Checkbox-Bestätigung, ruft bei Bestätigung `set_port_mode`.
+
+## Stand nach 0.5.0
+
+Umgesetzt gegenüber dem ursprünglichen Plan oben, mit zwei bewussten Abweichungen:
+
+- **Kein Whitelist-Eintrag für einen einzelnen `mode`-Lesepfad in `api.py`.** Sowohl der 60-Sekunden-Metadaten-Read im Coordinator als auch der frische Kontroll-Read direkt vor/nach dem Schreiben in `port_mode.py` laufen über `client.multi([...])` (genau wie `read_identity` in `parameters.py`), nicht über einen einzelnen `request()`-Aufruf. `client.multi()` ruft intern `/getdatamulti` auf, das schon in der Whitelist steht; die Pfade *innerhalb* von `datatosend` werden von `request()` gar nicht geprüft. Eine Erweiterung der Whitelist wäre also wirkungslos gewesen. `write_port_mode()` bleibt wie geplant komplett außerhalb von `request()` (eigene Methode, wie `write_parameter()`).
+- **Kein separates `record`-Argument bei `execute_mode_change()`.** Anders als `execute_restore` (viele Einzelschritte, die bei einem Absturz mitten im Vorgang einen Fortschrittsbericht brauchen) ist ein Moduswechsel ein einziger atomarer Schreib+Rücklese-Schritt. Es gibt daher keinen Zwischenzustand, der persistiert werden müsste, und keinen `get_port_mode_report`-Websocket-Command.
+
+Token-Kollisionen zwischen Restore- und Portmodus-Vorschauen (beide nutzen denselben `backups.plans`-Dict) werden dadurch verhindert, dass Restore-Pläne unter dem Schlüssel `"plan"` und Portmodus-Pläne unter `"mode_plan"` abgelegt werden; `restore_parameters`/`set_port_mode` prüfen jeweils, dass der passende Schlüssel im gefundenen Token-Eintrag existiert, bevor sie ihn verwenden.
+
+Ausgewählte Ziel-Modi sind im Backend (`port_mode.SWITCHABLE_MODES`) und im Panel bewusst auf `{2, 3}` (Digitalausgang/IO-Link) beschränkt – Disabled/DI sind zwar über `write_port_mode()` technisch erreichbar (API-Validierung erlaubt `{0,1,2,3}`), aber nicht Teil des hier abgedeckten Anwendungsfalls.
+
+Im Panel gibt es dafür keine Dropdown-Auswahl (wie ursprünglich skizziert), sondern einen einzelnen Umschalt-Button, der immer auf den jeweils *anderen* der beiden Modi zeigt („Zu IO-Link wechseln …“ bzw. „Zu Digitalausgang wechseln …“) – einfacher als eine Auswahl, aus der man auch den bereits aktiven Modus wählen könnte.
+
+**`pdout`-Byteformat verifiziert (2026-09-15, gegen echten AL1352 unter 192.168.1.22, Port 7/X07, unbenutzt/`status=0`, mit Zustimmung des Nutzers testweise auf DO geschaltet und danach zurück auf IO-Link):**
+
+- Pfad ist ganz normal unter `iolinkdevice`, anders als `pin2in`/`mode`: `port_path(port, "pdout")` liefert korrekt `/iolinkmaster/port[X]/iolinkdevice/pdout` – **hier darf/muss `port_path()` verwendet werden.**
+- Solange der Port nicht im DO-Modus ist, liefert `getdata` auf `pdout` einen Fehlercode (503); direkt nach dem Wechsel auf DO, aber vor dem ersten Schreiben, einen anderen Fehlercode (530, vermutlich „noch kein Wert gesetzt“).
+- `setdata` mit `{"newvalue": "01"}` bzw. `{"newvalue": "00"}` funktioniert wie erwartet und wird per `getdata` unverändert zurückgelesen (1-Byte-Hex-String, gleiche Konvention wie `write_parameter`).
+- Der Master validiert den Wert nicht als striktes Boolean: `"FF"` wird ebenso akzeptiert und unverändert zurückgelesen; ein zu langer Wert (`"0001"`) wird ohne Fehler auf das erste Byte gekürzt (Rücklesewert `"00"`). Die Implementierung schreibt daher ausschließlich `"01"`/`"00"` und liest beim Anzeigen defensiv „ein/aus“ als `raw != "00"`, statt strikt auf `"01"` zu vergleichen.
+- Die physische Ausgangswirkung (tatsächlicher Pegel an Pin 4) wurde nicht mit einem Multimeter nachgemessen, nur die IoT-Core-Registerebene. Sollte ein Nutzer eine Abweichung zwischen `switch`-Zustand und realem Pegel melden, hier zuerst nachsehen.
+
+Umgesetzt: `IfmClient.write_port_output()` in `api.py`, `pdout`-Read im Coordinator (nur für Ports mit gespeichertem `mode == 2`, um den sonst garantierten Fehlercode für IO-Link-Ports zu vermeiden), `switch.py` mit `IfmPin4Switch`, `PLATFORMS` in `const.py` um `"switch"` erweitert, erwartete-`unique_id`-Menge in `__init__.py` um `prefix + "pin4_do"` (nur bei `mode == 2`).
 
 ## Verifikation
 
