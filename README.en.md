@@ -8,7 +8,7 @@
 
 <p align="center"><strong>Industrial sensors for your smart home.<br>Pool, heating and compressed air – connected locally, monitored together.</strong></p>
 
-[![Version](https://img.shields.io/badge/version-0.3.2-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5)](https://www.hacs.xyz/)
 [![Tests](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
@@ -38,6 +38,7 @@ Compared to the original project by JS-DE-Tech, this fork so far adds:
 
 - **Parameters as Home Assistant entities (from 0.2.0):** manufacturer parameters can be opted into per port in the parameter list, each becoming its own entity – a `sensor` (read-only) or, for writable integer parameters, a `number` (free numeric range) or `select` (fixed set of values, e.g. percentage steps) entity, both settable from Home Assistant too. All three read independently of the fast process-data poll: on startup, after every change, and hourly. See [Parameters as a Home Assistant entity](docs/device-profiles.md#parameter-als-home-assistant-entity) for details.
 - **Master diagnostics as entities (from 0.3.0):** supply voltage, power consumption (derived from voltage × current, since the master itself reports no direct power value), temperature and supervision status of the master (the AL1350/AL1352 itself, not the connected sensors) are each exposed as a `sensor` or `binary_sensor` entity, and shown as a summary on the port overview page too.
+- **Pin 2 digital input as an entity (from 0.4.0):** pin 2 of every IO-Link port is always a digital input at the hardware level, regardless of the port's mode or any assigned device profile. Now exposed as its own `binary_sensor` entity per port, and shown in the Command Center too.
 
 ## Features
 
@@ -56,6 +57,7 @@ Compared to the original project by JS-DE-Tech, this fork so far adds:
 | **Home Assistant entities** | Sensors and binary sensors for measurements and status, ready for your own charts, notifications and automations. |
 | **Parameters as entities** | Pick individual manufacturer parameters per port in the parameter list; each becomes its own `sensor` (read-only) or, for writable integer parameters, a `number` or `select` entity you can also set from Home Assistant. |
 | **Master diagnostics as entities** | Supply voltage, power consumption, temperature and supervision status of the master itself as a `sensor` or `binary_sensor` entity, and as a summary on the port overview. |
+| **Pin 2 digital input as an entity** | Pin 2 of every IO-Link port is always a digital input at the hardware level, regardless of port mode or assigned profile – available as its own `binary_sensor` entity per port. |
 
 Routine measurement polling reads the devices. Manufacturer parameters selected as entities are read on startup, after every change and once an hour. **Writes otherwise only happen during an explicitly confirmed parameter restore, or when you set a parameter's `number` entity.** The integration does not configure master network settings or IO-Link port operating modes.
 
