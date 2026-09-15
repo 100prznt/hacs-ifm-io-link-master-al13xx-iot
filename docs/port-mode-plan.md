@@ -1,6 +1,6 @@
 # Pin 2 als Digitaleingang + Portmodus-Umschaltung (Pin 4)
 
-Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Teil 1 ist umgesetzt (ab Version 0.4.0, Bugfix in 0.4.2). Teil 2 ist ab 0.5.0 vollständig umgesetzt (Backend, Websocket-Commands, Panel-Vorschau/Bestätigung, `switch`-Plattform für den DO-Ausgangszustand), siehe Abschnitt "Stand nach 0.5.0" unten. Teil 3 (Pin 4 als Digitaleingang, 2× DI, volle 4-Wege-Moduswahl) ist ab 0.7.0 umgesetzt – siehe "Teil 3" unten. Die tatsächliche Signalauswertung am realen Sensor steht noch aus.
+Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Teil 1 ist umgesetzt (ab Version 0.4.0, Bugfix in 0.4.2). Teil 2 ist ab 0.5.0 vollständig umgesetzt (Backend, Websocket-Commands, Panel-Vorschau/Bestätigung, `switch`-Plattform für den DO-Ausgangszustand), siehe Abschnitt "Stand nach 0.5.0" unten. Teil 3 (Pin 4 als Digitaleingang, 2× DI, volle 4-Wege-Moduswahl) ist ab 0.7.0 umgesetzt und am realen Zwei-Ausgänge-Sensor vollständig verifiziert – siehe "Teil 3" unten. Damit ist der gesamte Plan abgeschlossen.
 
 ## Context
 
@@ -96,7 +96,9 @@ Umgesetzt: `IfmClient.write_port_output()` in `api.py`, `pdout`-Read im Coordina
 
 ## Teil 3 – Vollständige Portmodus-Auswahl (Deaktiviert/DI/DO/IO-Link) + Pin 4 als Digitaleingang — umgesetzt (ab 0.7.0)
 
-Alle unten geplanten Änderungen sind umgesetzt: `SWITCHABLE_MODES` deckt `{0,1,2,3}` ab, `item["pin4"]` im Coordinator, `IfmPin4DiSensor` in `binary_sensor.py`, Cleanup in `__init__.py`, verallgemeinerter Profil-Reset (`!= 3`) in `websocket.py`, sowie im Panel die 4-Wege-Auswahl (`<select>` statt Toggle-Button) und die einheitliche Portkarten-Darstellung für DO/DI/Deaktiviert inkl. `DI2`/`DI4`/`DO`-Badges mit DIN-EN-60947-5-2-Kontext im Tooltip. **Weiterhin unverifiziert:** ob `pdin`s Bit 0 im DI-Modus tatsächlich den realen Signalzustand widerspiegelt (siehe Verifikationsschritt 6/7 unten) – noch nicht am Sensor des Nutzers getestet.
+Alle unten geplanten Änderungen sind umgesetzt: `SWITCHABLE_MODES` deckt `{0,1,2,3}` ab, `item["pin4"]` im Coordinator, `IfmPin4DiSensor` in `binary_sensor.py`, Cleanup in `__init__.py`, verallgemeinerter Profil-Reset (`!= 3`) in `websocket.py`, sowie im Panel die 4-Wege-Auswahl (`<select>` statt Toggle-Button) und die einheitliche Portkarten-Darstellung für DO/DI/Deaktiviert inkl. `DI2`/`DI4`/`DO`-Badges mit DIN-EN-60947-5-2-Kontext im Tooltip.
+
+**Physisch verifiziert (2026-09-15, Elias, mit dem echten Zwei-Ausgänge-Sensor am DI-geschalteten Port):** Beide Schaltzustände des Sensors durchgeschaltet – `pdin`/`item["pin4"]`/die `IfmPin4DiSensor`-Entity folgen dem realen Signal korrekt in beide Richtungen. Damit ist Teil 3 vollständig abgeschlossen, keine offenen Punkte mehr.
 
 **Anlass:** Nutzer hat einen konkreten Sensor mit zwei separaten Schaltausgängen, der beide Signale (Pin 2 + Pin 4) gleichzeitig als Digitaleingänge braucht – nicht nur Vollständigkeit der Modus-Abdeckung.
 
@@ -112,7 +114,7 @@ Alle unten geplanten Änderungen sind umgesetzt: `SWITCHABLE_MODES` deckt `{0,1,
 | Pin-4-DI-Wert lesen (Modus 1) | `/iolinkmaster/port[X]/iolinkdevice/pdin` | **Kein eigenes `pin4in`-Register** – der Pfad wurde vom Master beim Test komplett ignoriert (fehlte in der `getdatamulti`-Antwort, nicht mal ein Fehlercode). Stattdessen läuft der DI-Wert über denselben `pdin`-Knoten, der sonst die IO-Link-Prozessdaten liefert – **`port_path()` ist hier also richtig**, anders als bei `pin2in`/`mode`. |
 | `iolinkdevice/status` im DI-Modus | – | Liefert 503 (wie im DO-Fall), da kein IO-Link-Gerät verbunden ist – `connected`-Logik im Coordinator bleibt unverändert korrekt (false), `decode()` läuft nicht an. |
 
-Getestet mit `status=0`/unbeschaltetem Port: `pdin` lieferte `"00"` (Ruhewert). **Nicht verifiziert:** ob das Bit tatsächlich auf `"01"` wechselt, sobald ein echtes High-Signal an Pin 4 anliegt, und ob ggf. mehr als Bit 0 relevant ist – das muss am realen Sensor des Nutzers nachgeprüft werden, sobald er angeschlossen ist (gleiches Vorgehen wie beim `pdout`-Bugfix: erst am echten Signal verifizieren, dann erst `available`/Interpretationslogik darauf verlassen).
+Getestet mit `status=0`/unbeschaltetem Port: `pdin` lieferte `"00"` (Ruhewert). **Am realen Sensor verifiziert (2026-09-15):** Bit 0 wechselt korrekt zwischen `"00"`/`"01"`, wenn der Zwei-Ausgänge-Sensor tatsächlich schaltet – beide Zustände am Testport durchgeschaltet und bestätigt, dass `item["pin4"]`/die `IfmPin4DiSensor`-Entity dem realen Signal folgen.
 
 **Praktischer Vorteil gegenüber Teil 2 (DO):** `pdin` wird vom Coordinator ohnehin **schon jeden Zyklus für jeden Port gelesen** (`paths.extend(port_path(port, name) for name in ("pdin", "status"))`, ungated). Für den DI-Fall ist also kein zusätzlicher, modus-gegateter Read nötig wie bei `pdout` – nur eine zusätzliche Interpretation des ohnehin vorhandenen `raw`-Werts. Damit entfällt auch die in 0.5.1 gefixte Verfügbarkeits-Falle (Register, das erst nach einem Schreibzugriff einen gültigen Wert hat) von vornherein – ein reines Lese-Register hat dieses Henne-Ei-Problem nicht.
 
@@ -136,6 +138,6 @@ Getestet mit `status=0`/unbeschaltetem Port: `pdin` lieferte `"00"` (Ruhewert). 
   - Pin-4-DO-Badge bleibt `DO` (unverändert, da als einziges DO-Badge pro Port ohnehin eindeutig).
   - Die DIN-EN-60947-5-2-Begriffe (Hauptschaltausgang/Ausgang 1 für Pin 4, zweiter Schaltausgang/Ausgang 2 für Pin 2) wandern stattdessen in die `title`-Tooltips der Badges, z. B. `title=”Digitaleingang Pin 2 · Ausgang 2 nach DIN EN 60947-5-2 (oft NC/Antivalent, je nach Sensor auch Diagnose/Teach-In)”` bzw. für Pin 4 `title=”Digitaleingang Pin 4/C-Q · Hauptschaltausgang (Ausgang 1, meist NO) nach DIN EN 60947-5-2”` – dort ist Kontext ohne Fehlbehauptung möglich, weil es nur beim Hover als Zusatzinfo erscheint statt als feste Beschriftung.
 
-**Verifikation (zusätzlich zu oben):**
-6. Sobald der Nutzer seinen Sensor an einen DI-geschalteten Port anschließt: `pdin` bei bekanntem High/Low-Zustand des Sensors gegenlesen und bestätigen, dass Bit 0 tatsächlich den Signalzustand widerspiegelt (nicht nur den Ruhewert `"00"` bei offenem Eingang).
-7. Test mit beiden Signalen gleichzeitig (Pin 2 über `pin2in`, Pin 4 über `pdin`) an einem Port mit dem konkreten Zwei-Ausgänge-Sensor des Nutzers.
+**Verifikation (zusätzlich zu oben) — beide erledigt (2026-09-15):**
+6. ✅ Sensor an einen DI-geschalteten Port angeschlossen: `pdin` bestätigt Bit 0 spiegelt den tatsächlichen Signalzustand wider (nicht nur den Ruhewert `"00"` bei offenem Eingang).
+7. ✅ Test mit beiden Signalen gleichzeitig (Pin 2 über `pin2in`, Pin 4 über `pdin`) am konkreten Zwei-Ausgänge-Sensor durchgeführt – beide Zustände korrekt geschaltet. Teil 3 ist damit vollständig abgeschlossen.

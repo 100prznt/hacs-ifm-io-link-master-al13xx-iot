@@ -266,8 +266,10 @@ class IfmIolinkPanel extends HTMLElement {
     this.shadowRoot.querySelectorAll('[data-pin2]').forEach(e=>{const item=master.ports[e.dataset.pin2];e.classList.toggle('io-on',!!item?.pin2);});
     this.shadowRoot.querySelectorAll('[data-pin4]').forEach(e=>{
       const item=master.ports[e.dataset.pin4];
-      const on=item?.mode===2?(item?.pdout && item.pdout!=='00'):item?.mode===1?!!item?.pin4:false;
-      e.classList.toggle('io-on',!!on);
+      const isDo=item?.mode===2;
+      const on=isDo?(item?.pdout && item.pdout!=='00'):item?.mode===1?!!item?.pin4:false;
+      e.classList.toggle('do-on',!!(isDo && on));
+      e.classList.toggle('io-on',!!(!isDo && on));
     });
     const pin2=this.shadowRoot.querySelector('#pin2');if(pin2)pin2.textContent=this.selected?.pin2==null?'—':this.selected.pin2?'Aktiv':'Inaktiv';
     const raw=this.shadowRoot.querySelector('#raw');if(raw)raw.textContent=this.selected?.raw || 'Keine Prozessdaten';
