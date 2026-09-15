@@ -127,6 +127,10 @@ The pictured splitter is labelled **POE-SP02BT-POE** and offers several output v
 | **ifm AL1352** | IoT master with eight IO-Link ports | Implemented; physical hardware testing pending |
 | **ifm PN7094** | Pressure, device status, OUT1/OUT2; Default and Status B profiles | Status B checked on physical sensors |
 | **ifm PN7096** | Pressure, device status, OUT1/OUT2; Default and Status B profiles | Status B checked on physical sensors |
+| **ifm LDH292** | Humidity, temperature, device status | Implemented; physical hardware testing pending |
+| **ifm PG1406** | Pressure (-0.124…2.5 bar), device status | Implemented; physical hardware testing pending |
+| **ifm SM9000** | Flow (5…300 l/min), totalizer, temperature, OUT1/OUT2 | Implemented; physical hardware testing pending |
+| **ifm SV4200** | Flow (1.0…20.0 l/min), temperature, OUT1/OUT2 | Implemented; physical hardware testing pending |
 | **Speck BADU FlowSonic Plus** | Flow, temperature, two totalizers and status flags | Real readings and Node-RED mapping checked |
 | **Other IO-Link devices** | IODD import or a custom JSON profile | Depends on the device format and supported data types |
 
