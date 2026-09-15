@@ -12,7 +12,6 @@ class IfmIolinkPanel extends HTMLElement {
   connectedCallback() { if (this._hass) this.start(); }
   disconnectedCallback() { clearInterval(this.timer); this.resizeObserver?.disconnect(); this.started=false; }
   start() { if(this.started)return; this.started=true; this.render(); this.refresh(); this.timer=setInterval(()=>this.refresh(),2000); }
-  versionInfo() { return this.data.version?`<span class="tag">v${esc(this.data.version)}</span>`:''; }
   async call(type, values={}) { return this._hass.callWS({type:`ifm_iolink/${type}`,...values}); }
   async refresh(force=false) {
     if(this.loading)return; this.loading=true;
@@ -37,17 +36,17 @@ class IfmIolinkPanel extends HTMLElement {
       ${master?`<label class="master-choice">Master <select id="master">${this.data.masters.map(m=>`<option value="${esc(m.entry_id)}" ${m===master?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label>`:''}</div>
       <div id="notice" class="notice" role="status" aria-live="polite"></div>
       ${this.page==='overview'?this.overview():this.library()}
-      <footer><span>ifm IO-Link · Direkte Verbindung zu Home Assistant</span><span>by JS-DE-Tech</span></footer></div>`;
+      <footer><span>ifm IO-Link · Direkte Verbindung zu Home Assistant</span><span>by JS-DE-Tech${this.data.version?` · v${esc(this.data.version)}`:''}</span></footer></div>`;
     this.shadowRoot.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{this.page=b.dataset.page;this.render();});
     this.shadowRoot.querySelector('#master')?.addEventListener('change',e=>{this.masterId=e.target.value;this.port=1;this.render();});
     this.bindOverview(); this.bindLibrary(); this.paint(); this.paintParameters();
     this.resizeObserver?.disconnect();const grid=this.shadowRoot.querySelector('.topology-grid');if(grid){this.resizeObserver=new ResizeObserver(()=>this.drawWires());this.resizeObserver.observe(grid);this.shadowRoot.querySelector('.master-device img').onload=()=>this.drawWires();}
   }
   overview() {
-    const master=this.master;if(!master)return `<section class="empty"><h2>Dein erster IO-Link-Master</h2><p>Füge einen AL1350 oder AL1352 hinzu. Du kannst das lokale Netzwerk durchsuchen oder die IoT-Adresse direkt eintragen.</p><a class="primary button" href="/config/integrations/dashboard/add?domain=ifm_iolink">Master einrichten</a><p>Ein bereits eingerichteter Master erscheint hier, sobald er geladen ist.</p>${this.versionInfo()}</section>`;
+    const master=this.master;if(!master)return `<section class="empty"><h2>Dein erster IO-Link-Master</h2><p>Füge einen AL1350 oder AL1352 hinzu. Du kannst das lokale Netzwerk durchsuchen oder die IoT-Adresse direkt eintragen.</p><a class="primary button" href="/config/integrations/dashboard/add?domain=ifm_iolink">Master einrichten</a><p>Ein bereits eingerichteter Master erscheint hier, sobald er geladen ist.</p></section>`;
     const portCount=master.identity.ports;
     const rows=portCount/2;
-    return `<section class="section-heading"><div><span class="eyebrow">DEINE ANLAGE</span><h2>${esc(master.name)}</h2><p>${portCount} IO-Link-Ports · Aktualisierung alle ${master.interval} Sekunden</p></div><div class="master-tools">${this.versionInfo()}<span class="master-diagnostics" id="master-diagnostics" role="status"></span><span class="status" id="master-status"></span><button id="manage-master">Master verwalten</button></div></section>
+    return `<section class="section-heading"><div><span class="eyebrow">DEINE ANLAGE</span><h2>${esc(master.name)}</h2><p>${portCount} IO-Link-Ports · Aktualisierung alle ${master.interval} Sekunden</p></div><div class="master-tools"><span class="master-diagnostics" id="master-diagnostics" role="status"></span><span class="status" id="master-status"></span><button id="manage-master">Master verwalten</button></div></section>
     <div class="workspace"><section class="topology" aria-label="Master mit angeschlossenen Geräten"><div class="topology-grid" style="--rows:${rows}">
       <div class="master-device" style="grid-row:1 / ${rows+1}"><span class="master-model">${esc(master.identity.model)}</span><img src="${BASE}/images/${master.identity.model.toLowerCase()}.png" alt="ifm ${esc(master.identity.model)}"><span class="master-caption">IO-LINK MASTER</span></div>
       <svg class="wires" aria-hidden="true"></svg>${Array.from({length:portCount},(_,i)=>this.portCard(i+1)).join('')}</div><p class="topology-hint">Port auswählen, Gerät zuweisen, Messwerte ansehen.</p></section>
@@ -56,9 +55,10 @@ class IfmIolinkPanel extends HTMLElement {
   portCard(number) {
     const item=this.master.ports[number] || {};const profile=this.profile(item.profile);const assignment=item.assignment || {};
     const side=number%2?'left':'right';
+    const isDo=item.mode===2;
     return `<button class="port-card ${side} ${number===this.port?'selected':''}" data-port="${number}" style="grid-row:${Math.ceil(number/2)};grid-column:${side==='left'?1:3}">
-      <span class="port-line"></span><div class="port-card-top"><span class="port-label">X${String(number).padStart(2,'0')}</span><span class="port-state" data-status="${number}"></span></div>
-      <div class="device-row">${profile?.image?`<img src="${esc(profile.image)}" alt="${esc(profile.model)}" referrerpolicy="no-referrer">`:'<span class="unknown-device">?</span>'}<div><strong>${esc(assignment.name || profile?.model || 'Gerät auswählen')}</strong><small>${esc(assignment.location || (item.identity?.productname ? 'Gerät erkannt' : 'Noch nicht zugewiesen'))}</small></div></div>
+      <span class="port-line"></span><div class="port-card-top"><span class="port-label-group"><span class="port-label">X${String(number).padStart(2,'0')}</span><span class="port-label" data-pin2="${number}" title="Digitaleingang Pin 2">DI</span>${isDo?`<span class="port-label" data-do="${number}" title="Digitalausgang Pin 4">DO</span>`:''}</span><span class="port-state" data-status="${number}"></span></div>
+      <div class="device-row">${isDo?'<span class="unknown-device do">DO</span><div><strong>Digitalausgang (Pin 4)</strong><small>24 V · max. 300 mA</small></div>':`${profile?.image?`<img src="${esc(profile.image)}" alt="${esc(profile.model)}" referrerpolicy="no-referrer">`:'<span class="unknown-device">?</span>'}<div><strong>${esc(assignment.name || profile?.model || 'Gerät auswählen')}</strong><small>${esc(assignment.location || (item.identity?.productname ? 'Gerät erkannt' : 'Noch nicht zugewiesen'))}</small></div>`}</div>
       <div class="card-values">${(profile?.fields || []).filter(f=>f.type!=='bool').slice(0,2).map(f=>`<div><small>${esc(f.name)}</small><b data-value="${number}:${esc(f.key)}">—</b></div>`).join('') || `<small>${esc(item.identity?.productname || 'Unbekannt / kein Gerät')}</small>`}</div>
       ${assignment.purpose?`<div class="purpose">${esc(assignment.purpose)}</div>`:''}</button>`;
   }
@@ -248,6 +248,8 @@ class IfmIolinkPanel extends HTMLElement {
     }
     this.shadowRoot.querySelectorAll('[data-value]').forEach(e=>{const [port,key]=e.dataset.value.split(':');const item=master.ports[port];const field=this.profile(item?.profile)?.fields.find(f=>f.key===key);if(field)e.textContent=formatValue(master.online&&item.connected&&!item.error?item.values[key]:null,field);});
     this.shadowRoot.querySelectorAll('[data-status]').forEach(e=>{const item=master.ports[e.dataset.status];const online=master.online&&item?.connected;e.textContent=online?'● Verbunden':'○ Offline';e.classList.toggle('offline',!online);});
+    this.shadowRoot.querySelectorAll('[data-pin2]').forEach(e=>{const item=master.ports[e.dataset.pin2];e.classList.toggle('io-on',!!item?.pin2);});
+    this.shadowRoot.querySelectorAll('[data-do]').forEach(e=>{const item=master.ports[e.dataset.do];e.classList.toggle('io-on',!!item?.pdout && item.pdout!=='00');});
     const pin2=this.shadowRoot.querySelector('#pin2');if(pin2)pin2.textContent=this.selected?.pin2==null?'—':this.selected.pin2?'Aktiv':'Inaktiv';
     const raw=this.shadowRoot.querySelector('#raw');if(raw)raw.textContent=this.selected?.raw || 'Keine Prozessdaten';
     const error=this.shadowRoot.querySelector('#decode-error');if(error)error.textContent=this.selected?.error || '';

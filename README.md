@@ -8,7 +8,7 @@
 
 <p align="center"><strong>Industriesensorik für dein Smart Home.<br>Pool, Heizung und Druckluft – lokal verbunden und gemeinsam im Blick.</strong></p>
 
-[![Version](https://img.shields.io/badge/version-0.6.0-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
+[![Version](https://img.shields.io/badge/version-0.6.1-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5)](https://www.hacs.xyz/)
 [![Tests](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
@@ -40,7 +40,8 @@ Gegenüber dem Original-Projekt von JS-DE-Tech ergänzt dieser Fork bisher:
 - **Master-Diagnose als Entity (ab 0.3.0):** Versorgungsspannung, Leistungsaufnahme (aus Spannung × Strom berechnet, da der Master selbst keinen Leistungswert liefert), Temperatur und Supervision-Status des Masters (AL1350/AL1352 selbst, nicht der angeschlossenen Sensoren) stehen als eigene `sensor`- bzw. `binary_sensor`-Entität zur Verfügung und werden zusätzlich als Kennzahl auf der Portübersicht angezeigt.
 - **Digitaleingang Pin 2 als Entity (ab 0.4.0):** Pin 2 jedes IO-Link-Ports ist hardwareseitig immer ein digitaler Eingang, unabhängig vom Portmodus oder einem zugewiesenen Geräteprofil. Steht ab sofort als eigene `binary_sensor`-Entität je Port zur Verfügung und wird zusätzlich im Command Center angezeigt.
 - **Portmodus-Umschaltung für Pin 4 (ab 0.5.0):** Pin 4 (C/Q) jedes Ports lässt sich im Command Center zwischen IO-Link-Kommunikation und Digitalausgang umschalten – mit geprüfter Vorschau und Bestätigung, analog zur Parameter-Wiederherstellung, da ein Wechsel einen ggf. angeschlossenen IO-Link-Sensor vom Port trennt. Ein Port im DO-Modus bekommt zusätzlich eine eigene `switch`-Entität für den reinen Ausgangszustand (an/aus) – automatisierbar wie jede andere Home-Assistant-Entity.
-- **Versionsanzeige (ab 0.6.0):** Die Portübersicht zeigt die installierte Version. Für Update-Benachrichtigungen selbst ist bewusst kein eigener Mechanismus eingebaut – das übernimmt HACS bereits über seine eigene `update`-Entity (sichtbar unter Einstellungen → Geräte & Dienste bzw. der Updates-Übersicht), sobald für dieses Repository Releases gepflegt werden.
+- **Versionsanzeige (ab 0.6.0):** Der Footer der Portübersicht zeigt die installierte Version. Für Update-Benachrichtigungen selbst ist bewusst kein eigener Mechanismus eingebaut – das übernimmt HACS bereits über seine eigene `update`-Entity (sichtbar unter Einstellungen → Geräte & Dienste bzw. der Updates-Übersicht), sobald für dieses Repository Releases gepflegt werden.
+- **Pin-2/Pin-4-Status direkt auf der Portkarte (ab 0.6.1):** Neben dem Steckernamen (X01, X02, …) zeigt ein kleines Badge live den Zustand des Digitaleingangs (Pin 2); ist ein Port als Digitalausgang konfiguriert, kommt ein zweites Badge für dessen Schaltzustand dazu, und die Kartenmitte zeigt statt „Gerät auswählen“ direkt „Digitalausgang (Pin 4) · 24 V, max. 300 mA“.
 
 ## Funktionen
 
