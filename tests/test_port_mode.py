@@ -10,17 +10,20 @@ from custom_components.ifm_iolink.port_mode import execute_mode_change, prepare_
 
 def setup(mode=3, connected=True):
     state = {"mode": mode}
-    writes = []
+    writes, output_writes = [], []
 
     async def write_port_mode(port, target):
         writes.append((port, target))
         state["mode"] = target
 
+    async def write_port_output(port, on):
+        output_writes.append((port, on))
+
     async def multi(paths):
         return {p: {"code": 200, "data": state["mode"]} for p in paths}
 
     c = SimpleNamespace(
-        client=SimpleNamespace(write_port_mode=write_port_mode, multi=multi),
+        client=SimpleNamespace(write_port_mode=write_port_mode, write_port_output=write_port_output, multi=multi),
         condition_values={(1, "prof", 64): 0, (2, "prof", 64): 0},
         metadata_at=1,
     )
@@ -32,11 +35,11 @@ def setup(mode=3, connected=True):
             "profile": "prof",
         }
     }
-    return c, state, writes
+    return c, state, writes, output_writes
 
 
 def test_preview_reports_current_state_and_rejects_noop():
-    c, _, _ = setup(mode=3, connected=True)
+    c, *_ = setup(mode=3, connected=True)
     plan = asyncio.run(prepare_mode_change(c, 1, 2))
     assert plan == {
         "port": 1,
@@ -67,7 +70,7 @@ def test_unknown_port_or_unread_mode_cannot_be_previewed():
 
 
 def test_execute_writes_reads_back_and_clears_port_conditions():
-    c, state, writes = setup(mode=3)
+    c, state, writes, output_writes = setup(mode=3)
     plan = asyncio.run(prepare_mode_change(c, 1, 2))
     result = asyncio.run(execute_mode_change(c, 1, plan))
     assert writes == [(1, 2)]
@@ -76,8 +79,22 @@ def test_execute_writes_reads_back_and_clears_port_conditions():
     assert c.metadata_at == 0
 
 
+def test_switching_to_do_initializes_pdout_to_off():
+    c, *_, output_writes = setup(mode=3)
+    plan = asyncio.run(prepare_mode_change(c, 1, 2))
+    asyncio.run(execute_mode_change(c, 1, plan))
+    assert output_writes == [(1, False)]  # pdout has no defined value until the first write
+
+
+def test_switching_to_iolink_does_not_touch_pdout():
+    c, *_, output_writes = setup(mode=2)
+    plan = asyncio.run(prepare_mode_change(c, 1, 3))
+    asyncio.run(execute_mode_change(c, 1, plan))
+    assert output_writes == []
+
+
 def test_stale_current_mode_aborts_before_write():
-    c, state, writes = setup(mode=3)
+    c, state, writes, _ = setup(mode=3)
     plan = asyncio.run(prepare_mode_change(c, 1, 2))
     c.data["1"]["mode"] = 1  # changed behind our back since the preview
     with pytest.raises(ValueError):
@@ -93,7 +110,7 @@ def test_reloaded_coordinator_aborts_before_write():
 
 
 def test_readback_mismatch_after_write_is_reported():
-    c, state, writes = setup(mode=3)
+    c, state, writes, _ = setup(mode=3)
     plan = asyncio.run(prepare_mode_change(c, 1, 2))
 
     async def write_port_mode(port, target):

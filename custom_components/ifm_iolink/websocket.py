@@ -18,6 +18,7 @@ from .iodd import import_iodd
 from .parameters import collect_parameters, read_parameter_value
 from .port_mode import execute_mode_change, prepare_mode_change
 from .restore import execute_restore, prepare_restore
+from .version import installed_version
 
 
 def register_commands(hass):
@@ -63,6 +64,7 @@ async def snapshot(hass, connection, message):
     result = {
         "masters": [item.snapshot() for item in data["coordinators"].values()],
         "profile_revision": data["library"].revision,
+        "version": installed_version(),
     }
     if message["include_profiles"]:
         result["profiles"] = list(data["library"].all.values())

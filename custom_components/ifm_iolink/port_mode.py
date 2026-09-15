@@ -39,6 +39,10 @@ async def execute_mode_change(coordinator, port, plan, still_current=lambda: Tru
     actual = data_value(response, path)
     if actual != plan["target_mode"]:
         raise ValueError("Rücklesewert stimmt nicht mit dem Zielmodus überein")
+    if actual == 2:
+        # pdout has no defined value until the first write; default it to off rather than
+        # leaving it in the error state the device reports for an unwritten DO output.
+        await coordinator.client.write_port_output(port, False)
     coordinator.condition_values = {key: value for key, value in coordinator.condition_values.items() if key[0] != port}
     coordinator.metadata_at = 0
     return {"port": port, "mode": actual}

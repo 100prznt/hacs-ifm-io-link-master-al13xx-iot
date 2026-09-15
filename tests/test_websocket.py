@@ -80,6 +80,7 @@ def test_existing_masters_load_in_panel(ws, include_profiles):
     assert results[0][0] == 1
     assert results[0][1]["masters"] == masters
     assert results[0][1]["profile_revision"] == 3
+    assert results[0][1]["version"].count(".") == 2
     if include_profiles:
         assert results[0][1]["profiles"] == [{"id": "pn7096"}]
     else:
@@ -253,10 +254,13 @@ def test_preview_port_mode_then_set_port_mode_updates_entry_options(ws):
     async def write_port_mode(port, mode):
         coordinator.data["1"]["mode"] = mode
 
+    async def write_port_output(port, on):
+        pass
+
     async def multi(paths):
         return {p: {"code": 200, "data": coordinator.data["1"]["mode"]} for p in paths}
 
-    coordinator.client = SimpleNamespace(write_port_mode=write_port_mode, multi=multi)
+    coordinator.client = SimpleNamespace(write_port_mode=write_port_mode, write_port_output=write_port_output, multi=multi)
     updates = []
     hass = SimpleNamespace(
         tasks=[],

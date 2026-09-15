@@ -22,12 +22,12 @@ class IfmPin4Switch(IfmEntity, SwitchEntity):
 
     @property
     def is_on(self):
-        raw = self.port_data.get("pdout")
-        return None if raw is None else raw != "00"
+        # pdout reads as an error until the first write after a mode switch; treat that as "off".
+        return self.port_data.get("pdout") not in (None, "00")
 
     @property
     def available(self):
-        return super().available and self.port_data.get("pdout") is not None
+        return super().available and self.port_data.get("assignment", {}).get("mode") == 2
 
     async def async_turn_on(self, **kwargs):
         await self._write(True)

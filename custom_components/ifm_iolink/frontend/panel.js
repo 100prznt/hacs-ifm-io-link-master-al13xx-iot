@@ -12,6 +12,7 @@ class IfmIolinkPanel extends HTMLElement {
   connectedCallback() { if (this._hass) this.start(); }
   disconnectedCallback() { clearInterval(this.timer); this.resizeObserver?.disconnect(); this.started=false; }
   start() { if(this.started)return; this.started=true; this.render(); this.refresh(); this.timer=setInterval(()=>this.refresh(),2000); }
+  versionInfo() { return this.data.version?`<span class="tag">v${esc(this.data.version)}</span>`:''; }
   async call(type, values={}) { return this._hass.callWS({type:`ifm_iolink/${type}`,...values}); }
   async refresh(force=false) {
     if(this.loading)return; this.loading=true;
@@ -43,10 +44,10 @@ class IfmIolinkPanel extends HTMLElement {
     this.resizeObserver?.disconnect();const grid=this.shadowRoot.querySelector('.topology-grid');if(grid){this.resizeObserver=new ResizeObserver(()=>this.drawWires());this.resizeObserver.observe(grid);this.shadowRoot.querySelector('.master-device img').onload=()=>this.drawWires();}
   }
   overview() {
-    const master=this.master;if(!master)return `<section class="empty"><h2>Dein erster IO-Link-Master</h2><p>Füge einen AL1350 oder AL1352 hinzu. Du kannst das lokale Netzwerk durchsuchen oder die IoT-Adresse direkt eintragen.</p><a class="primary button" href="/config/integrations/dashboard/add?domain=ifm_iolink">Master einrichten</a><p>Ein bereits eingerichteter Master erscheint hier, sobald er geladen ist.</p></section>`;
+    const master=this.master;if(!master)return `<section class="empty"><h2>Dein erster IO-Link-Master</h2><p>Füge einen AL1350 oder AL1352 hinzu. Du kannst das lokale Netzwerk durchsuchen oder die IoT-Adresse direkt eintragen.</p><a class="primary button" href="/config/integrations/dashboard/add?domain=ifm_iolink">Master einrichten</a><p>Ein bereits eingerichteter Master erscheint hier, sobald er geladen ist.</p>${this.versionInfo()}</section>`;
     const portCount=master.identity.ports;
     const rows=portCount/2;
-    return `<section class="section-heading"><div><span class="eyebrow">DEINE ANLAGE</span><h2>${esc(master.name)}</h2><p>${portCount} IO-Link-Ports · Aktualisierung alle ${master.interval} Sekunden</p></div><div class="master-tools"><span class="master-diagnostics" id="master-diagnostics" role="status"></span><span class="status" id="master-status"></span><button id="manage-master">Master verwalten</button></div></section>
+    return `<section class="section-heading"><div><span class="eyebrow">DEINE ANLAGE</span><h2>${esc(master.name)}</h2><p>${portCount} IO-Link-Ports · Aktualisierung alle ${master.interval} Sekunden</p></div><div class="master-tools">${this.versionInfo()}<span class="master-diagnostics" id="master-diagnostics" role="status"></span><span class="status" id="master-status"></span><button id="manage-master">Master verwalten</button></div></section>
     <div class="workspace"><section class="topology" aria-label="Master mit angeschlossenen Geräten"><div class="topology-grid" style="--rows:${rows}">
       <div class="master-device" style="grid-row:1 / ${rows+1}"><span class="master-model">${esc(master.identity.model)}</span><img src="${BASE}/images/${master.identity.model.toLowerCase()}.png" alt="ifm ${esc(master.identity.model)}"><span class="master-caption">IO-LINK MASTER</span></div>
       <svg class="wires" aria-hidden="true"></svg>${Array.from({length:portCount},(_,i)=>this.portCard(i+1)).join('')}</div><p class="topology-hint">Port auswählen, Gerät zuweisen, Messwerte ansehen.</p></section>
