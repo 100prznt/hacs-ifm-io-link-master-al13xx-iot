@@ -10,6 +10,7 @@ from custom_components.ifm_iolink.decoder import (
     encode_parameter,
     numeric_range,
     parameter_entity_kind,
+    select_values,
     validate_profile,
 )
 
@@ -171,15 +172,38 @@ def test_encode_parameter_rejects_out_of_range_and_non_writable():
 
 
 def test_min_max_narrows_the_writable_range_below_the_bit_width():
-    # PG1406 index 802 (display brightness) is a uint8 but the device only accepts 0-100;
-    # writing higher values fails on real hardware with ifm error code 531.
+    p = copy.deepcopy(parameter("pn7096_default", 500))  # rw uint8, otherwise 0..255
+    p["decoder"]["fields"][0].update(min=10, max=20)
+    assert numeric_range(p["decoder"]["fields"][0]) == (10, 20)
+    assert encode_parameter(p, 20) == "14"
+    with pytest.raises(ValueError):
+        encode_parameter(p, 21)
+    with pytest.raises(ValueError):
+        encode_parameter(p, 9)
+
+
+def test_values_enum_is_a_select_not_a_number():
+    # PG1406 index 802 (display brightness) is a uint8 but the device only accepts the fixed
+    # steps 0/25/50/75/100, not a continuous range; writing e.g. 51 fails on real hardware with
+    # ifm error code 531 even though it is well within the bit width.
     p = parameter("ifm_pg1406", 802)
     field = p["decoder"]["fields"][0]
-    assert (field["min"], field["max"]) == (0, 100)
-    assert numeric_range(field) == (0, 100)
-    assert encode_parameter(p, 100) == "64"
+    assert parameter_entity_kind(p) == "select"
+    assert field["values"] == [0, 25, 50, 75, 100]
+    assert select_values(field) == [0, 25, 50, 75, 100]
+    assert encode_parameter(p, 75) == "4B"
     with pytest.raises(ValueError):
-        encode_parameter(p, 150)
+        encode_parameter(p, 51)
+
+
+def test_values_are_scaled_like_a_number_field():
+    p = copy.deepcopy(parameter("pn7096_default", 583))  # scale 0.01, signed 16 bit
+    p["decoder"]["fields"][0]["values"] = [0, 50, 100]
+    field = p["decoder"]["fields"][0]
+    assert select_values(field) == [0, 0.5, 1.0]
+    assert encode_parameter(p, 0.5) == "0032"
+    with pytest.raises(ValueError):
+        encode_parameter(p, 0.75)
 
 
 @pytest.mark.parametrize(
@@ -192,7 +216,31 @@ def test_min_max_narrows_the_writable_range_below_the_bit_width():
     ],
 )
 def test_reject_invalid_min_max_definitions(changes):
-    p = copy.deepcopy(parameter("ifm_pg1406", 802))
+    p = copy.deepcopy(parameter("pn7096_default", 500))  # plain rw uint8, no min/max/values
     p["decoder"]["fields"][0].update(changes)
+    with pytest.raises(ValueError):
+        validate_profile(p["decoder"])
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        [0, 25, 50, 75, 300],  # above the uint8 bit width
+        [0, 25, 25, 75],  # duplicate
+        [0, 25.5, 75],  # not an integer
+        [],  # empty
+    ],
+)
+def test_reject_invalid_values_definitions(values):
+    p = copy.deepcopy(parameter("pn7096_default", 500))  # plain rw uint8, no min/max/values
+    p["decoder"]["fields"][0]["values"] = values
+    with pytest.raises(ValueError):
+        validate_profile(p["decoder"])
+
+
+def test_reject_values_on_non_integer_type():
+    p = copy.deepcopy(parameter("pn7096_default", 500))
+    p["decoder"]["fields"][0]["type"] = "bool"
+    p["decoder"]["fields"][0]["values"] = [0, 1]
     with pytest.raises(ValueError):
         validate_profile(p["decoder"])

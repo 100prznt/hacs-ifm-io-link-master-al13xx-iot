@@ -830,8 +830,8 @@
             "shift": 0,
             "bits": 8,
             "precision": 0,
-            "min": 0,
-            "max": 100
+            "unit": "%",
+            "values": [0, 25, 50, 75, 100]
           }
         ]
       }

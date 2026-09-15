@@ -44,6 +44,7 @@ FIELD_KEYS = {
     "mask",
     "min",
     "max",
+    "values",
 }
 
 
@@ -169,6 +170,20 @@ def validate_profile(profile: dict, *, custom: bool = False) -> dict:
             lo, hi = field.get("min", bit_lo), field.get("max", bit_hi)
             if type(lo) is not int or type(hi) is not int or not bit_lo <= lo <= hi <= bit_hi:
                 raise ValueError(f"{key}: min/max müssen ganzzahlig sein, im Wertebereich liegen und min <= max erfüllen")
+        if "values" in field:
+            # A fixed set of accepted raw values, e.g. a 0/25/50/75/100 brightness enum rather than a range.
+            if field["type"] not in ("uint", "int"):
+                raise ValueError(f"{key}: values nur für uint oder int erlaubt")
+            bits = field.get("bits", size * 8 - shift)
+            bit_lo, bit_hi = (-(1 << (bits - 1)), (1 << (bits - 1)) - 1) if field["type"] == "int" else (0, (1 << bits) - 1)
+            values = field["values"]
+            if (
+                not isinstance(values, list)
+                or not 1 <= len(values) <= 64
+                or len(set(values)) != len(values)
+                or any(type(v) is not int or not bit_lo <= v <= bit_hi for v in values)
+            ):
+                raise ValueError(f"{key}: values muss eine Liste eindeutiger Ganzzahlen im Wertebereich sein")
         invalid = field.get("invalid_values", [])
         if (
             not isinstance(invalid, list)
@@ -255,7 +270,7 @@ def decode(profile: dict, hex_data: str) -> dict:
 
 
 def parameter_entity_kind(parameter: dict) -> str:
-    """'number' for a writable, full-byte integer parameter; 'sensor' for everything else."""
+    """'select' for a fixed set of accepted values, 'number' for a writable range, else 'sensor'."""
     decoder = parameter.get("decoder")
     if not decoder or len(decoder.get("fields", [])) != 1:
         return "sensor"
@@ -264,7 +279,9 @@ def parameter_entity_kind(parameter: dict) -> str:
         return "sensor"
     size = field.get("length", TYPES[field["type"]] or 1)
     trivial = field.get("offset", 0) == 0 and field.get("shift", 0) == 0 and field.get("bits", size * 8) == size * 8
-    return "number" if trivial else "sensor"
+    if not trivial:
+        return "sensor"
+    return "select" if "values" in field else "number"
 
 
 def _raw_bounds(field: dict) -> tuple[int, int]:
@@ -286,7 +303,7 @@ def numeric_range(field: dict) -> tuple[float, float]:
 
 def encode_parameter(parameter: dict, value) -> str:
     """Encode a number into the raw hex for a writable full-byte int/uint parameter."""
-    if parameter_entity_kind(parameter) != "number":
+    if parameter_entity_kind(parameter) not in ("number", "select"):
         raise ValueError("Parameter unterstützt keine Zahlenkodierung")
     if type(value) not in (int, float) or not math.isfinite(value):
         raise ValueError("Ungültiger Zahlenwert")
@@ -295,7 +312,18 @@ def encode_parameter(parameter: dict, value) -> str:
     scale = field.get("scale", 1)
     add = field.get("add", 0)
     raw = round((value - add) / scale) if scale else int(value)
-    lo, hi = _raw_bounds(field)
-    if not lo <= raw <= hi:
-        raise ValueError("Wert außerhalb des zulässigen Bereichs")
+    if "values" in field:
+        if raw not in field["values"]:
+            raise ValueError("Wert ist keine gültige Auswahl für diesen Parameter")
+    else:
+        lo, hi = _raw_bounds(field)
+        if not lo <= raw <= hi:
+            raise ValueError("Wert außerhalb des zulässigen Bereichs")
     return raw.to_bytes(size, field.get("endian", "big"), signed=(field["type"] == "int")).hex().upper()
+
+
+def select_values(field: dict) -> list[float]:
+    """The field's fixed accepted values, scaled to the exposed value domain."""
+    scale = field.get("scale", 1)
+    add = field.get("add", 0)
+    return [raw * scale + add for raw in field["values"]]

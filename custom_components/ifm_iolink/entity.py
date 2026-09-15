@@ -2,12 +2,14 @@
 
 from datetime import timedelta
 
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import IfmError
 from .const import DOMAIN
+from .decoder import encode_parameter
 from .parameters import read_parameter_value
 
 PARAMETER_SCAN_INTERVAL = timedelta(hours=1)
@@ -157,3 +159,12 @@ class IfmParameterEntity(CoordinatorEntity):
             return
         self._value = result["value"]
         self._parameter_available = True
+
+    async def write_value(self, value):
+        """Write a new value, then re-read to confirm what the device actually accepted."""
+        try:
+            raw = encode_parameter(self.parameter, value)
+            await self.coordinator.client.write_parameter(int(self.port), self.parameter["index"], raw)
+        except (ValueError, IfmError) as err:
+            raise HomeAssistantError(str(err)) from err
+        await self.async_update_ha_state(force_refresh=True)

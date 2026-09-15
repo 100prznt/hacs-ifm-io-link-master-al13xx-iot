@@ -164,6 +164,12 @@ def import_iodd(raw: bytes, filename: str = "device.zip") -> list[dict]:
                     # so the IODD's range always fits the field's own bit width here.
                     field["min"] = int(round(min(float(r.get("lowerValue")) for r in ranges)))
                     field["max"] = int(round(max(float(r.get("upperValue")) for r in ranges)))
+            else:
+                singles = dtype.findall("i:SingleValue", NS)
+                if is_parameter and singles and kind in ("UIntegerT", "IntegerT"):
+                    # No ValueRange at all: the SingleValues are the complete, fixed set of accepted
+                    # values (e.g. a 0/25/50/75/100 percentage enum), not exceptions within a range.
+                    field["values"] = sorted({int(round(float(n.get("value")))) for n in singles})
             return field
 
         parameters = []

@@ -35,7 +35,7 @@ The graphical Command Center places the master at the centre, with connections t
 
 Compared to the original project by JS-DE-Tech, this fork so far adds:
 
-- **Parameters as Home Assistant entities (from 0.2.0):** manufacturer parameters can be opted into per port in the parameter list, each becoming its own entity – a `sensor` (read-only) or, for writable full-byte integer parameters, a `number` entity you can also set from Home Assistant. Both read independently of the fast process-data poll: on startup, after every change, and hourly. See [Parameters as a Home Assistant entity](docs/device-profiles.md#parameter-als-home-assistant-entity) for details.
+- **Parameters as Home Assistant entities (from 0.2.0):** manufacturer parameters can be opted into per port in the parameter list, each becoming its own entity – a `sensor` (read-only) or, for writable integer parameters, a `number` (free numeric range) or `select` (fixed set of values, e.g. percentage steps) entity, both settable from Home Assistant too. All three read independently of the fast process-data poll: on startup, after every change, and hourly. See [Parameters as a Home Assistant entity](docs/device-profiles.md#parameter-als-home-assistant-entity) for details.
 - **Master diagnostics as entities (from 0.3.0):** supply voltage, power consumption (derived from voltage × current, since the master itself reports no direct power value), temperature and supervision status of the master (the AL1350/AL1352 itself, not the connected sensors) are each exposed as a `sensor` or `binary_sensor` entity, and shown as a summary on the port overview page too.
 
 ## Features

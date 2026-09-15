@@ -1,11 +1,9 @@
-"""Writable manufacturer parameters, opted into per port in the panel."""
+"""Writable manufacturer parameters with a continuous range, opted into per port in the panel."""
 
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.const import EntityCategory
-from homeassistant.exceptions import HomeAssistantError
 
-from .api import IfmError
-from .decoder import encode_parameter, numeric_range, parameter_entity_kind
+from .decoder import numeric_range, parameter_entity_kind
 from .entity import IfmParameterEntity
 
 
@@ -41,9 +39,4 @@ class IfmParameterNumber(IfmParameterEntity, NumberEntity):
         return self._value
 
     async def async_set_native_value(self, value):
-        raw = encode_parameter(self.parameter, value)
-        try:
-            await self.coordinator.client.write_parameter(int(self.port), self.parameter["index"], raw)
-        except IfmError as err:
-            raise HomeAssistantError(str(err)) from err
-        await self.async_update_ha_state(force_refresh=True)
+        await self.write_value(value)
