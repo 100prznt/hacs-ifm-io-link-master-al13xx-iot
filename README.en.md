@@ -16,6 +16,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/LICENSE)
 [![Support via PayPal](https://img.shields.io/badge/Support%20via-PayPal-0070BA?logo=paypal&logoColor=white)](https://paypal.me/JensSaffrich)
 
+> 🔀 **This is a fork.** This repository is a fork of [JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot), maintained by [100prznt](https://github.com/100prznt). It includes additional changes made in this fork on top of the original – see [Changes in this fork](#changes-in-this-fork).
+
 The **ifm IO-Link Command Center** connects **AL1350 and AL1352 IO-Link masters with IoT Core** directly to Home Assistant. Pressure, flow, temperature and device status become useful entities for dashboards, history and your own automations – without a cloud service, MQTT broker or Node-RED in between.
 
 The graphical Command Center places the master at the centre, with connections to its devices. Each device shows its image, name, location, purpose and live readings. A shared device library, IODD import and parameter backups help you manage the entire installation in one place.
@@ -29,8 +31,6 @@ The graphical Command Center places the master at the centre, with connections t
 <p align="center"><a href="#features">Features</a> · <a href="#my-real-world-project">My project</a> · <a href="#installation">Installation</a> · <a href="#parameter-backup-and-sensor-replacement">Parameter backups</a> · <a href="#custom-devices-and-iodd-import">Custom devices</a></p>
 
 > **Version 0.1.3:** First public test release. AL1350, PN7094, PN7096 and BADU FlowSonic Plus have been checked on a real installation running Home Assistant 2026.8.3. AL1352 support is implemented but has not yet been tested on physical hardware. The Command Center interface is currently in German; this README provides English documentation.
-
-> 🔀 **This is a fork.** This repository is a fork of [JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot), maintained by [100prznt](https://github.com/100prznt). It includes additional changes made in this fork on top of the original – see [Changes in this fork](#changes-in-this-fork).
 
 ## Changes in this fork
 
@@ -54,7 +54,8 @@ Compared to the original project by JS-DE-Tech, this fork so far adds:
 | **Read device parameters** | Read individual values or all manufacturer parameters defined in the profile at the click of a button. |
 | **Backup and restore** | Store parameter backups per port, export/import JSON, review a restore preview and download the restore report. |
 | **Home Assistant entities** | Sensors and binary sensors for measurements and status, ready for your own charts, notifications and automations. |
-| **Parameters as entities** | Pick individual manufacturer parameters per port in the parameter list; each becomes its own `sensor` (read-only) or, for writable integer parameters, `number` entity you can also set from Home Assistant. |
+| **Parameters as entities** | Pick individual manufacturer parameters per port in the parameter list; each becomes its own `sensor` (read-only) or, for writable integer parameters, a `number` or `select` entity you can also set from Home Assistant. |
+| **Master diagnostics as entities** | Supply voltage, power consumption, temperature and supervision status of the master itself as a `sensor` or `binary_sensor` entity, and as a summary on the port overview. |
 
 Routine measurement polling reads the devices. Manufacturer parameters selected as entities are read on startup, after every change and once an hour. **Writes otherwise only happen during an explicitly confirmed parameter restore, or when you set a parameter's `number` entity.** The integration does not configure master network settings or IO-Link port operating modes.
 
@@ -173,7 +174,7 @@ The **Sensortausch & Sicherung** (“Sensor replacement & backup”) section off
 
 When replacing a sensor, its device identification and profile must match; the replacement's serial number may differ. Supported writable parameters are transferred individually and read back. Unchanged values, read-only values and system commands are skipped. The process stops on an error, leaving any values already written in place. The report records the result; there is no automatic rollback.
 
-The backup covers **the parameters defined in the profile**, not a complete device image. The BADU profile currently contains three verified format/unit parameters. The master's automatic IO-Link Data Storage function is separate and is not enabled by this integration. Details and limitations: [Technical notes (German)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/docs/technical-notes.md).
+The backup covers **the parameters defined in the profile**, not a complete device image. The BADU profile currently contains three verified format/unit parameters. The master's automatic IO-Link Data Storage function is separate and is not enabled by this integration. Details and limitations: [Technical notes (German)](docs/technical-notes.md).
 
 ## Custom devices and IODD import
 
@@ -181,7 +182,7 @@ In the **Gerätebibliothek** (“Device library”), import a manufacturer's IOD
 
 The importer supports integers, booleans, IEEE-754 floats, simple records, bit positions and static scaling, among other features. Unsupported or ambiguous definitions are reported as notes. Depending on the sensor, the profile may need further adjustments.
 
-Without a suitable IODD, assign the device as **Unbekannt** (“Unknown”) and export a debug file. This can help you create a custom JSON decoding profile, test it directly in the Command Center, add an image and description, and assign it to several ports. Profiles describe data decoding; they do not contain executable Python or JavaScript code. [Profile format and examples (German)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/docs/device-profiles.md)
+Without a suitable IODD, assign the device as **Unbekannt** (“Unknown”) and export a debug file. This can help you create a custom JSON decoding profile, test it directly in the Command Center, add an image and description, and assign it to several ports. Profiles describe data decoding; they do not contain executable Python or JavaScript code. [Profile format and examples (German)](docs/device-profiles.md)
 
 ## Development, testing and feedback
 
@@ -195,7 +196,7 @@ node --check custom_components/ifm_iolink/frontend/panel.js
 
 Run `python scripts/preview.py` to start a local interface demo at `http://127.0.0.1:8765/`. It uses sample values only. Build the installation archive with `python scripts/package.py`.
 
-**150 automated tests** cover decoding, IODD import, API errors and restore validation, among other areas. A restore without value changes has been checked on a physical PN7094; actual changes and failure scenarios have so far been simulated. [Validation scope (German)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/docs/validation.md)
+**150 automated tests** cover decoding, IODD import, API errors and restore validation, among other areas. A restore without value changes has been checked on a physical PN7094; actual changes and failure scenarios have so far been simulated. [Validation scope (German)](docs/validation.md)
 
 Bug reports, AL1352 hardware experiences and new sensor profiles are welcome through [GitHub Issues](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/issues). Please include the model, firmware, integration version and observed problem. Before uploading debug files or backups publicly, check them for private names, serial numbers and other installation-specific information.
 
@@ -207,6 +208,6 @@ Enjoying the integration and want to support its continued development? Voluntar
 
 ## Licence and project
 
-The project's own source code is licensed under the [MIT licence](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/LICENSE). Manufacturer images, IODD excerpts, logos and product names retain their respective rights. The installation photos were supplied by JS-DE-Tech. [Image credits and sources (German)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/docs/assets.md)
+The project's own source code is licensed under the [MIT licence](LICENSE). Manufacturer images, IODD excerpts, logos and product names retain their respective rights. The installation photos were supplied by JS-DE-Tech. [Image credits and sources (German)](docs/assets.md)
 
 This is an independent community integration by **JS-DE-Tech**, not an official product of ifm, Speck or JUMO.
