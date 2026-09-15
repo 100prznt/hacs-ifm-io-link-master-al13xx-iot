@@ -241,6 +241,40 @@ def test_assign_preserves_entities_for_same_profile_and_resets_on_change(ws):
     asyncio.run(run())
 
 
+def test_assign_preserves_port_mode_set_by_a_previous_mode_change(ws):
+    entry = SimpleNamespace(
+        options={"ports": {"1": {"profile": "unknown", "name": "", "location": "", "purpose": "", "mode": 2}}}
+    )
+    coordinator = SimpleNamespace(entry=entry, identity={"ports": 4}, library=SimpleNamespace(all={}))
+    updates = []
+    hass = SimpleNamespace(
+        tasks=[],
+        data={"ifm_iolink": {"coordinators": {"entry1": coordinator}, "parameter_backups": SimpleNamespace(busy=set())}},
+        config_entries=SimpleNamespace(async_update_entry=lambda entry, options: updates.append(options)),
+    )
+    connection = SimpleNamespace(user=SimpleNamespace(is_admin=True), send_result=lambda *a: None, send_error=lambda *a: None)
+
+    async def run():
+        ws.assign(
+            hass,
+            connection,
+            {
+                "id": 1,
+                "entry_id": "entry1",
+                "port": 1,
+                "profile": "unknown",
+                "name": "",
+                "location": "Heizungsraum",
+                "purpose": "",
+            },
+        )
+        await asyncio.gather(*hass.tasks)
+
+    asyncio.run(run())
+    assert updates[-1]["ports"]["1"]["mode"] == 2
+    assert updates[-1]["ports"]["1"]["location"] == "Heizungsraum"
+
+
 def test_preview_port_mode_then_set_port_mode_updates_entry_options(ws):
     entry = SimpleNamespace(options={"ports": {"1": {"profile": "prof", "name": "Sensor"}}})
     coordinator = SimpleNamespace(

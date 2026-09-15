@@ -100,6 +100,7 @@ async def assign(hass, connection, message):
         ports = {
             **coordinator.entry.options.get("ports", {}),
             str(message["port"]): {
+                **current,
                 **{key: message[key].strip() for key in ("profile", "name", "location", "purpose")},
                 "entities": entities,
             },

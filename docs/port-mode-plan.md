@@ -1,6 +1,6 @@
 # Pin 2 als Digitaleingang + Portmodus-Umschaltung (Pin 4)
 
-Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Teil 1 ist umgesetzt (ab Version 0.4.0, Bugfix in 0.4.2). Teil 2 ist ab 0.5.0 vollständig umgesetzt (Backend, Websocket-Commands, Panel-Vorschau/Bestätigung, `switch`-Plattform für den DO-Ausgangszustand), siehe Abschnitt "Stand nach 0.5.0" unten.
+Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Teil 1 ist umgesetzt (ab Version 0.4.0, Bugfix in 0.4.2). Teil 2 ist ab 0.5.0 vollständig umgesetzt (Backend, Websocket-Commands, Panel-Vorschau/Bestätigung, `switch`-Plattform für den DO-Ausgangszustand), siehe Abschnitt "Stand nach 0.5.0" unten. Teil 3 (Pin 4 als Digitaleingang, 2× DI) ist geplant, API-Pfad verifiziert, aber noch nicht implementiert – siehe "Teil 3" unten.
 
 ## Context
 
@@ -11,7 +11,7 @@ Der AL1350/AL1352 hat laut ifm-Datenblatt an jedem M12-Port zwei nutzbare Signal
 
 Ziel: Pin 2 als reinen `binary_sensor` je Port sichtbar machen (**erledigt**), und eine **Umschalt-Logik** für den Portmodus von Pin 4 ergänzen (IO-Link ⇄ Digitalausgang, **offen**), analog zum bestehenden Parameter-Restore-Flow abgesichert – weil ein Moduswechsel den ggf. angeschlossenen IO-Link-Sensor vom Port trennt.
 
-Klärung mit dem Nutzer: Pin-2-Sensor entsteht an **allen** Ports (unabhängig vom zugewiesenen Profil). Der Portmodus-Wechsel läuft **ausschließlich im Command-Center-Panel mit Vorschau+Bestätigung** (kein direktes HA-`select`/`switch` zum Umschalten des Modus, da das eine Automation versehentlich einen Sensor-Port kappen könnte). Sobald ein Port im DO-Modus ist, wird der reine Ausgangszustand (an/aus) als normales `switch`-Entity exponiert – das ist ungefährlich und automatisierbar.
+Klärung mit Elias: Pin-2-Sensor entsteht an **allen** Ports (unabhängig vom zugewiesenen Profil). Der Portmodus-Wechsel läuft **ausschließlich im Command-Center-Panel mit Vorschau+Bestätigung** (kein direktes HA-`select`/`switch` zum Umschalten des Modus, da das eine Automation versehentlich einen Sensor-Port kappen könnte). Sobald ein Port im DO-Modus ist, wird der reine Ausgangszustand (an/aus) als normales `switch`-Entity exponiert – das ist ungefährlich und automatisierbar.
 
 **API verifiziert (2026-09-15, gegen echten AL1352 unter 192.168.1.22, Testmaster ohne Produktivbetrieb):**
 
@@ -86,10 +86,54 @@ Im Panel gibt es dafür keine Dropdown-Auswahl (wie ursprünglich skizziert), so
 
 Umgesetzt: `IfmClient.write_port_output()` in `api.py`, `pdout`-Read im Coordinator (nur für Ports mit gespeichertem `mode == 2`, um den sonst garantierten Fehlercode für IO-Link-Ports zu vermeiden), `switch.py` mit `IfmPin4Switch`, `PLATFORMS` in `const.py` um `"switch"` erweitert, erwartete-`unique_id`-Menge in `__init__.py` um `prefix + "pin4_do"` (nur bei `mode == 2`).
 
-## Verifikation
+## Verifikation (Teil 1 + 2)
 
 1. `python -m pytest -q` (bestehende Suite darf nicht brechen – v. a. `tests/test_coordinator.py`, `tests/test_websocket.py`, `tests/test_api.py`, die um Tests für `write_port_mode`, `preview_port_mode`/`set_port_mode` und die `switch`-Plattform zu ergänzen sind).
 2. `node --check custom_components/ifm_iolink/frontend/panel.js` nach jeder Panel-Änderung.
 3. `python -m ruff check custom_components tests scripts` und `python -m compileall -q custom_components`.
 4. Vor der `switch.py`-Implementierung noch das exakte `pdout`-Byteformat für den DO-Fall an einem Port mit `mode=DO` gegenlesen (z. B. Ausgang manuell schalten und `pdout` per `getdata` beobachten).
 5. Manueller Test im Command Center (`scripts/preview.py` für UI-Layout, echter Master für Funktionstest): Portmodus-Wechsel eines Test-Ports zu DO, Ausgang per neuem `switch`-Entity schalten, zurück zu IO-Link wechseln und prüfen, dass der ursprüngliche Sensor wieder erkannt wird.
+
+## Teil 3 – Vollständige Portmodus-Auswahl (Deaktiviert/DI/DO/IO-Link) + Pin 4 als Digitaleingang — offen (geplant nach 0.6.1)
+
+**Anlass:** Nutzer hat einen konkreten Sensor mit zwei separaten Schaltausgängen, der beide Signale (Pin 2 + Pin 4) gleichzeitig als Digitaleingänge braucht – nicht nur Vollständigkeit der Modus-Abdeckung.
+
+**Klärung mit Elias (2026-09-15):**
+- Moduswahl im Panel wird auf eine **echte 4-Wege-Auswahl** umgebaut (IO-Link / Digitalausgang / Digitaleingang / Deaktiviert), statt wie bisher ein Toggle-Button zwischen nur zwei Zielen. `SWITCHABLE_MODES` deckt damit den kompletten von `write_port_mode()` ohnehin schon zugelassenen Wertebereich `{0,1,2,3}` ab – die bisherige Beschränkung auf `{2,3}` entfällt komplett.
+- Pin 4 im DI-Modus bekommt eine **eigene `binary_sensor`-Entity**, analog zu Pin 2 und zur bestehenden `IfmPin4Switch` – existiert nur solange `mode == 1`.
+- Die Portkarte bekommt für **alle drei Nicht-IO-Link-Modi** (DO, DI, Deaktiviert) eine eigene, konsistente Darstellung in der Kartenmitte (statt „Gerät auswählen“/„Noch nicht zugewiesen“) – nicht nur für DO wie in 0.6.1 bereits umgesetzt. Pin 2 bleibt davon unberührt und zeigt sein `DI2`-Badge immer, unabhängig vom Portmodus (hardwareseitig fest, siehe Context oben).
+
+**API verifiziert (2026-09-15, gegen echten AL1352 unter 192.168.1.22, Port 3, unbenutzt/`status=0`, testweise auf DI geschaltet und danach zurück auf IO-Link):**
+
+| Zweck | Pfad | Format |
+|---|---|---|
+| Pin-4-DI-Wert lesen (Modus 1) | `/iolinkmaster/port[X]/iolinkdevice/pdin` | **Kein eigenes `pin4in`-Register** – der Pfad wurde vom Master beim Test komplett ignoriert (fehlte in der `getdatamulti`-Antwort, nicht mal ein Fehlercode). Stattdessen läuft der DI-Wert über denselben `pdin`-Knoten, der sonst die IO-Link-Prozessdaten liefert – **`port_path()` ist hier also richtig**, anders als bei `pin2in`/`mode`. |
+| `iolinkdevice/status` im DI-Modus | – | Liefert 503 (wie im DO-Fall), da kein IO-Link-Gerät verbunden ist – `connected`-Logik im Coordinator bleibt unverändert korrekt (false), `decode()` läuft nicht an. |
+
+Getestet mit `status=0`/unbeschaltetem Port: `pdin` lieferte `"00"` (Ruhewert). **Nicht verifiziert:** ob das Bit tatsächlich auf `"01"` wechselt, sobald ein echtes High-Signal an Pin 4 anliegt, und ob ggf. mehr als Bit 0 relevant ist – das muss am realen Sensor des Nutzers nachgeprüft werden, sobald er angeschlossen ist (gleiches Vorgehen wie beim `pdout`-Bugfix: erst am echten Signal verifizieren, dann erst `available`/Interpretationslogik darauf verlassen).
+
+**Praktischer Vorteil gegenüber Teil 2 (DO):** `pdin` wird vom Coordinator ohnehin **schon jeden Zyklus für jeden Port gelesen** (`paths.extend(port_path(port, name) for name in ("pdin", "status"))`, ungated). Für den DI-Fall ist also kein zusätzlicher, modus-gegateter Read nötig wie bei `pdout` – nur eine zusätzliche Interpretation des ohnehin vorhandenen `raw`-Werts. Damit entfällt auch die in 0.5.1 gefixte Verfügbarkeits-Falle (Register, das erst nach einem Schreibzugriff einen gültigen Wert hat) von vornherein – ein reines Lese-Register hat dieses Henne-Ei-Problem nicht.
+
+**Geplante Änderungen:**
+
+- **`port_mode.py`**: `SWITCHABLE_MODES` von `(2, 3)` auf `(0, 1, 2, 3)` erweitern (alle vier Modi wählbar); Fehlertext in `prepare_mode_change` entfällt weitgehend, da praktisch kein Modus mehr abgelehnt wird (nur noch "bereits in diesem Modus" bleibt als Ablehnungsgrund). Der DO-spezifische Default-Write (`write_port_output(port, False)`) bleibt nur an `actual == 2` gebunden – für DI (`1`) und Deaktiviert (`0`) gibt es nichts zu initialisieren/schreiben.
+- **`coordinator.py`**: `item["pin4"]` ergänzen, analog zu `item["pin2"]`/`item["pdout"]` – Wert aus dem ohnehin gelesenen `raw` ableiten, nur wenn `assignment.get("mode") == 1`, sonst `None`: `item["pin4"] = (raw not in (None, "00")) if assignment.get("mode") == 1 else None`. Kein neuer Pfad in der `paths`-Liste nötig.
+- **`binary_sensor.py`**: neue Entity `IfmPin4DiSensor` (oder generischer benannt), Vorbild `IfmPin2Sensor`, aber wie `IfmPin4Switch` nur erzeugt wenn `entry.options["ports"][port]["mode"] == 1`. `EntityCategory.DIAGNOSTIC` wie bei Pin 2 (reine Anzeige, kein Schreibzugriff).
+- **`__init__.py`**: erwartete-`unique_id`-Menge um `prefix + "pin4_di"` erweitern, nur wenn `mode == 1` (Aufräumlogik entfernt die Entity automatisch beim Zurückschalten, wie schon bei `pin4_do`).
+- **`websocket.py`** (`set_port_mode`): Profil-Reset-Bedingung von `if result["mode"] == 2:` auf `if result["mode"] != 3:` verallgemeinern – ein DI- oder deaktivierter Port kann genauso wenig IO-Link-Prozessdaten decodieren wie ein DO-Port, `profile`/`entities` müssen also in allen drei Fällen auf `"unknown"`/`[]` zurückgesetzt werden. Deckt Modus `0` automatisch mit ab, da `!= 3` alle drei Nicht-IO-Link-Ziele erfasst.
+- **Frontend (`panel.js`) – Moduswahl**: `<details>`-Block „Portmodus“ von Einzel-Toggle-Button auf ein `<select>` mit vier Optionen (IO-Link / Digitalausgang / Digitaleingang (Pin 4) / Deaktiviert) umbauen; „Wechseln“-Button nur aktiv, wenn Auswahl ≠ aktueller Modus; `previewPortMode(targetMode)` bleibt inhaltlich unverändert (nimmt schon einen beliebigen `targetMode` entgegen). Hinweistext im Vorschau-Dialog dynamisch aus `MODE_NAMES`-Bezeichnungen aufbauen statt hart auf „Digitalausgang“ zu verweisen (Backend hat `MODE_NAMES` in `port_mode.py` bereits, Frontend müsste das analog nachbilden, z. B. als kleines JS-Objekt wie `MODE_NAMES` in `panel.js` bereits für die Badges existiert).
+- **Frontend (`panel.js`) – Portkarte für alle drei Nicht-IO-Link-Modi**: Die in 0.6.1 eingeführte `isDo`-Verzweigung in `portCard()` auf alle drei Fälle verallgemeinern (z. B. über eine kleine Lookup-Tabelle `mode → {icon, title, detail}` statt eines einzelnen Booleans), damit device-row und `unknown-device`-Icon konsistent befüllt werden:
+  - `mode===2` (DO, bereits umgesetzt): Icon-Box „DO“, Titel „Digitalausgang (Pin 4)“, Detail „24 V · max. 300 mA“.
+  - `mode===1` (DI, neu): Icon-Box „DI“, Titel „Digitaleingang (Pin 4)“, Detail „11–30 V high / 0–5 V low“ (aus dem Datenblatt-Kontext oben im Dokument, gleiche Spezifikation wie Pin 2).
+  - `mode===0` (Deaktiviert, neu): Icon-Box z. B. „—“, Titel „Port deaktiviert“, Detail z. B. „Pin 4 ist ausgeschaltet“.
+  - `mode===3` (IO-Link): unverändert das bisherige profilbasierte Verhalten.
+  - Pin-2-`DI2`-Badge bleibt in allen vier Fällen unverändert sichtbar (siehe Context: hardwareseitig unabhängig vom Portmodus).
+- **Badge-Namenskonvention geklärt (2026-09-15):** Kompakte Karten-Badges bleiben **pin-/funktionsbasiert**, nicht sensor-/normbasiert, weil der Master nur weiß, dass ein Pin elektrisch ein DI ist, nicht wofür der angeschlossene Sensor die Ader tatsächlich nutzt (nach DIN EN 60947-5-2 ist Pin 2/weiße Ader zwar häufig ein zweiter Schaltausgang (NC/Antivalent), bei manchen Sensoren aber auch Diagnose- oder Teach-In-Leitung – eine feste “Ausgang 2”/”Q2”-Beschriftung wäre also nicht für alle Profile korrekt). Deshalb:
+  - Pin-2-Badge wird von `DI` auf **`DI2`** umbenannt (bisher `data-pin2`, Text `DI`).
+  - Pin-4-DI-Badge heißt **`DI4`**.
+  - Pin-4-DO-Badge bleibt `DO` (unverändert, da als einziges DO-Badge pro Port ohnehin eindeutig).
+  - Die DIN-EN-60947-5-2-Begriffe (Hauptschaltausgang/Ausgang 1 für Pin 4, zweiter Schaltausgang/Ausgang 2 für Pin 2) wandern stattdessen in die `title`-Tooltips der Badges, z. B. `title=”Digitaleingang Pin 2 · Ausgang 2 nach DIN EN 60947-5-2 (oft NC/Antivalent, je nach Sensor auch Diagnose/Teach-In)”` bzw. für Pin 4 `title=”Digitaleingang Pin 4/C-Q · Hauptschaltausgang (Ausgang 1, meist NO) nach DIN EN 60947-5-2”` – dort ist Kontext ohne Fehlbehauptung möglich, weil es nur beim Hover als Zusatzinfo erscheint statt als feste Beschriftung.
+
+**Verifikation (zusätzlich zu oben):**
+6. Sobald der Nutzer seinen Sensor an einen DI-geschalteten Port anschließt: `pdin` bei bekanntem High/Low-Zustand des Sensors gegenlesen und bestätigen, dass Bit 0 tatsächlich den Signalzustand widerspiegelt (nicht nur den Ruhewert `"00"` bei offenem Eingang).
+7. Test mit beiden Signalen gleichzeitig (Pin 2 über `pin2in`, Pin 4 über `pdin`) an einem Port mit dem konkreten Zwei-Ausgänge-Sensor des Nutzers.
