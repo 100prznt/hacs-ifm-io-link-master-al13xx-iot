@@ -332,6 +332,61 @@ def test_preview_port_mode_then_set_port_mode_updates_entry_options(ws):
     assert not hass.data["ifm_iolink"]["parameter_backups"].plans  # single-use token
 
 
+@pytest.mark.parametrize("target_mode", [0, 1])
+def test_set_port_mode_resets_profile_for_di_and_disabled_too(ws, target_mode):
+    entry = SimpleNamespace(options={"ports": {"1": {"profile": "prof", "name": "Sensor"}}})
+    coordinator = SimpleNamespace(
+        entry=entry,
+        identity={"ports": 4},
+        data={"1": {"mode": 3, "connected": False, "assignment": {"name": "Sensor"}, "profile": "prof"}},
+        condition_values={},
+        metadata_at=1,
+    )
+
+    async def write_port_mode(port, mode):
+        coordinator.data["1"]["mode"] = mode
+
+    async def write_port_output(port, on):
+        pass
+
+    async def multi(paths):
+        return {p: {"code": 200, "data": coordinator.data["1"]["mode"]} for p in paths}
+
+    coordinator.client = SimpleNamespace(
+        write_port_mode=write_port_mode, write_port_output=write_port_output, multi=multi
+    )
+    updates = []
+    hass = SimpleNamespace(
+        tasks=[],
+        data={
+            "ifm_iolink": {
+                "coordinators": {"entry1": coordinator},
+                "parameter_backups": SimpleNamespace(busy=set(), plans={}),
+            }
+        },
+        config_entries=SimpleNamespace(async_update_entry=lambda entry, options: updates.append(options)),
+    )
+    results, errors = [], []
+    connection = SimpleNamespace(
+        user=SimpleNamespace(is_admin=True, id="admin"),
+        send_result=lambda *a: results.append(a),
+        send_error=lambda *a: errors.append(a),
+    )
+
+    async def run():
+        ws.preview_port_mode(hass, connection, {"id": 1, "entry_id": "entry1", "port": 1, "target_mode": target_mode})
+        await asyncio.gather(*hass.tasks)
+        hass.tasks.clear()
+        token = results[0][1]["token"]
+        ws.set_port_mode(hass, connection, {"id": 2, "entry_id": "entry1", "port": 1, "token": token, "confirm": True})
+        await asyncio.gather(*hass.tasks)
+
+    asyncio.run(run())
+    assert not errors
+    assert updates[-1]["ports"]["1"]["mode"] == target_mode
+    assert updates[-1]["ports"]["1"]["profile"] == "unknown"
+
+
 def test_port_mode_and_restore_tokens_are_not_interchangeable(ws):
     import time
 

@@ -3,6 +3,11 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;',
 const initialProfile = () => ({id:'custom_mein_sensor',name:'Mein Sensor',manufacturer:'',model:'',description:'',purpose:'',image:'',notes:'',length:2,fields:[{key:'value',name:'Messwert',type:'int',offset:0,length:2,scale:0.01,precision:2}]});
 const formatValue = (value, field) => value == null ? '—' : typeof value === 'boolean' ? (value ? 'Aktiv' : 'Inaktiv') : `${new Intl.NumberFormat('de-DE',{maximumFractionDigits:field.precision ?? 3}).format(value)}${field.unit ? ' '+field.unit : ''}`;
 const MODE_NAMES = {0:'Deaktiviert',1:'Digitaleingang (DI)',2:'Digitalausgang (DO)',3:'IO-Link'};
+const PIN4_MODE_CARD = {
+  0:{icon:'—',title:'Port deaktiviert',detail:'Pin 4 ist ausgeschaltet'},
+  1:{icon:'DI',title:'Digitaleingang (Pin 4)',detail:'11–30 V high / 0–5 V low'},
+  2:{icon:'DO',title:'Digitalausgang (Pin 4)',detail:'24 V · max. 300 mA'},
+};
 
 class IfmIolinkPanel extends HTMLElement {
   constructor() {
@@ -55,10 +60,10 @@ class IfmIolinkPanel extends HTMLElement {
   portCard(number) {
     const item=this.master.ports[number] || {};const profile=this.profile(item.profile);const assignment=item.assignment || {};
     const side=number%2?'left':'right';
-    const isDo=item.mode===2;
+    const pin4=PIN4_MODE_CARD[item.mode];
     return `<button class="port-card ${side} ${number===this.port?'selected':''}" data-port="${number}" style="grid-row:${Math.ceil(number/2)};grid-column:${side==='left'?1:3}">
-      <span class="port-line"></span><div class="port-card-top"><span class="port-label-group"><span class="port-label">X${String(number).padStart(2,'0')}</span><span class="port-label" data-pin2="${number}" title="Digitaleingang Pin 2">DI</span>${isDo?`<span class="port-label" data-do="${number}" title="Digitalausgang Pin 4">DO</span>`:''}</span><span class="port-state" data-status="${number}"></span></div>
-      <div class="device-row">${isDo?'<span class="unknown-device do">DO</span><div><strong>Digitalausgang (Pin 4)</strong><small>24 V · max. 300 mA</small></div>':`${profile?.image?`<img src="${esc(profile.image)}" alt="${esc(profile.model)}" referrerpolicy="no-referrer">`:'<span class="unknown-device">?</span>'}<div><strong>${esc(assignment.name || profile?.model || 'Gerät auswählen')}</strong><small>${esc(assignment.location || (item.identity?.productname ? 'Gerät erkannt' : 'Noch nicht zugewiesen'))}</small></div>`}</div>
+      <span class="port-line"></span><div class="port-card-top"><span class="port-label-group"><span class="port-label">X${String(number).padStart(2,'0')}</span><span class="port-label" data-pin2="${number}" title="Digitaleingang Pin 2 · Ausgang 2 nach DIN EN 60947-5-2 (oft NC/Antivalent, je nach Sensor auch Diagnose/Teach-In)">DI2</span>${item.mode===1?`<span class="port-label" data-pin4="${number}" title="Digitaleingang Pin 4/C-Q · Hauptschaltausgang (Ausgang 1, meist NO) nach DIN EN 60947-5-2">DI4</span>`:''}${item.mode===2?`<span class="port-label" data-pin4="${number}" title="Digitalausgang Pin 4/C-Q">DO</span>`:''}</span><span class="port-state" data-status="${number}"></span></div>
+      <div class="device-row">${pin4?`<span class="unknown-device compact">${esc(pin4.icon)}</span><div><strong>${esc(pin4.title)}</strong><small>${esc(pin4.detail)}</small></div>`:`${profile?.image?`<img src="${esc(profile.image)}" alt="${esc(profile.model)}" referrerpolicy="no-referrer">`:'<span class="unknown-device">?</span>'}<div><strong>${esc(assignment.name || profile?.model || 'Gerät auswählen')}</strong><small>${esc(assignment.location || (item.identity?.productname ? 'Gerät erkannt' : 'Noch nicht zugewiesen'))}</small></div>`}</div>
       <div class="card-values">${(profile?.fields || []).filter(f=>f.type!=='bool').slice(0,2).map(f=>`<div><small>${esc(f.name)}</small><b data-value="${number}:${esc(f.key)}">—</b></div>`).join('') || `<small>${esc(item.identity?.productname || 'Unbekannt / kein Gerät')}</small>`}</div>
       ${assignment.purpose?`<div class="purpose">${esc(assignment.purpose)}</div>`:''}</button>`;
   }
@@ -80,12 +85,19 @@ class IfmIolinkPanel extends HTMLElement {
       ${this.portModeDetails(item)}`;
   }
   portModeDetails(item){
-    const mode=item.mode,switchable=mode===2 || mode===3,target=mode===2?3:2;
-    return `<details><summary>Portmodus</summary><p>Aktueller Modus (Pin 4): <b>${esc(MODE_NAMES[mode] ?? '—')}</b></p>
-      ${switchable
-        ?`<p class="field-help">Pin 4 (C/Q) kann zwischen IO-Link-Kommunikation und einem Digitalausgang (max. 300 mA) umgeschaltet werden. Ein Wechsel trennt einen ggf. angeschlossenen IO-Link-Sensor von diesem Port und läuft nur nach Bestätigung in einer Vorschau.</p><button id="preview-port-mode" data-target-mode="${target}">Zu ${esc(MODE_NAMES[target])} wechseln …</button>`
-        :mode==null?'<p class="field-help">Portmodus wird geladen …</p>':'<p class="field-help">Für diesen Modus wird in diesem Panel kein Wechsel angeboten.</p>'}
+    const mode=item.mode;
+    if(mode==null)return `<details><summary>Portmodus</summary><p class="field-help">Portmodus wird geladen …</p></details>`;
+    const options=[3,2,1,0].map(m=>`<option value="${m}" ${m===mode?'selected':''}>${esc(MODE_NAMES[m])}${m===mode?' (aktuell)':''}</option>`).join('');
+    return `<details><summary>Portmodus</summary><p>Aktueller Modus (Pin 4): <b>${esc(MODE_NAMES[mode])}</b></p>
+      <label>Zielmodus<select id="port-mode-target">${options}</select></label>
+      <p class="field-help">Pin 4 (C/Q) kann zwischen IO-Link-Kommunikation, Digitalausgang, Digitaleingang und Deaktiviert umgeschaltet werden. Ein Wechsel trennt einen ggf. angeschlossenen IO-Link-Sensor von diesem Port und läuft nur nach Bestätigung in einer Vorschau.</p>
+      <button id="preview-port-mode" disabled>Modus wechseln …</button>
       <p id="port-mode-status" role="status"></p></details>`;
+  }
+  paintPortModeButton(){
+    const select=this.shadowRoot.querySelector('#port-mode-target'),btn=this.shadowRoot.querySelector('#preview-port-mode');
+    if(!select || !btn)return;
+    btn.disabled=this.parameterBusy.has(this.portKey()) || Number(select.value)===this.selected?.mode;
   }
   library(){
     return `<section class="section-heading"><div><span class="eyebrow">EINMAL ANLEGEN · MEHRFACH VERWENDEN</span><h2>Deine Gerätebibliothek</h2><p>Herstellerdatei importieren oder ein eigenes Übersetzungsprofil anlegen.</p></div><div class="action-row"><label class="button primary upload">IODD importieren<input id="iodd-upload" type="file" accept=".zip,.xml"></label><button id="blank-profile">+ Eigenes Gerät</button></div></section>
@@ -115,7 +127,8 @@ class IfmIolinkPanel extends HTMLElement {
     this.shadowRoot.querySelector('#new-device')?.addEventListener('click',()=>{this.testRaw=this.selected?.raw || '';this.page='library';this.draft=initialProfile();this.draft.length=Math.max(1,this.testRaw.length/2);this.render();});
     this.shadowRoot.querySelector('#manage-master')?.addEventListener('click',()=>this.manageMaster());
     this.shadowRoot.querySelector('#restore-saved')?.addEventListener('click',()=>this.previewRestore());
-    this.shadowRoot.querySelector('#preview-port-mode')?.addEventListener('click',e=>this.previewPortMode(Number(e.target.dataset.targetMode)));
+    this.shadowRoot.querySelector('#port-mode-target')?.addEventListener('change',()=>this.paintPortModeButton());
+    this.shadowRoot.querySelector('#preview-port-mode')?.addEventListener('click',()=>{const select=this.shadowRoot.querySelector('#port-mode-target');if(select)this.previewPortMode(Number(select.value));});
     this.shadowRoot.querySelector('#restore-upload')?.addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>500000)throw Error('JSON-Sicherung darf höchstens 500 KB groß sein.');await this.previewRestore(JSON.parse(await file.text()));}catch(error){this.notify(error.message,true);}finally{e.target.value='';}});
     this.shadowRoot.querySelector('#restore-report')?.addEventListener('click',()=>{const report=this.restoreReports.get(this.portKey());if(report)this.download(`iolink-port-${this.port}-restore-report.json`,report);});
     this.shadowRoot.querySelector('#read-all')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();this.readAllParameters(false);});
@@ -155,7 +168,8 @@ class IfmIolinkPanel extends HTMLElement {
   }
   paintParameters(){
     const key=this.portKey(),data=this.parameterReads.get(key),backup=this.parameterBackups.get(key),busy=this.parameterBusy.has(key);
-    this.shadowRoot.querySelectorAll('[data-read],#read-all,#backup-parameters,#restore-upload,#preview-port-mode').forEach(b=>b.disabled=busy);
+    this.shadowRoot.querySelectorAll('[data-read],#read-all,#backup-parameters,#restore-upload').forEach(b=>b.disabled=busy);
+    this.paintPortModeButton();
     const status=this.shadowRoot.querySelector('#parameter-status');if(status)status.textContent=busy?'Parameterabfrage oder Wiederherstellung läuft …':data?.message || 'Alle im Profil enthaltenen Parameter werden nacheinander gelesen.';
     for(const p of this.profile(this.selected?.profile)?.parameters || []){const el=this.shadowRoot.querySelector(`#parameter-${p.index}`),v=data?.values?.[p.index];if(el)el.textContent=data?.errors?.[p.index]?`Fehler: ${data.errors[p.index]}`:v?`${typeof v.value==='string'?v.value:formatValue(v.value,{unit:v.unit})} (Hex: ${v.raw})`:'Noch nicht gelesen';}
     const label=this.shadowRoot.querySelector('#backup-status');if(label)label.textContent=backup?`Sicherung vom ${new Date(backup.created_at).toLocaleString('de-DE')} · ${Object.keys(backup.values).length} Parameter · Profil ${backup.profile_id}`:'Noch keine Sicherung an diesem Port.';
@@ -186,7 +200,8 @@ class IfmIolinkPanel extends HTMLElement {
     const dialog=document.createElement('dialog');dialog.className='master-dialog restore-dialog';
     dialog.innerHTML=`<h3>Portmodus wechseln</h3><p><b>${esc(name)} · Port X${String(port).padStart(2,'0')}</b><br>Aktueller Modus: ${esc(MODE_NAMES[preview.current_mode] ?? preview.current_mode)}<br>Neuer Modus: ${esc(MODE_NAMES[preview.target_mode] ?? preview.target_mode)}</p>
       ${preview.device_connected?`<p class="suggestion">An diesem Port ist aktuell ein Gerät verbunden${preview.assignment_name?` (${esc(preview.assignment_name)})`:''}. Der Wechsel trennt dieses Gerät von Pin 4.</p>`:''}
-      <p>Ein Digitalausgang kann keine IO-Link-Prozessdaten liefern; die Portzuweisung wird dabei auf „Unbekannt“ zurückgesetzt. Die Vorschau gilt fünf Minuten.</p>
+      ${preview.target_mode!==3?'<p>Digitalausgang, Digitaleingang und Deaktiviert können keine IO-Link-Prozessdaten liefern; die Portzuweisung wird dabei auf „Unbekannt“ zurückgesetzt.</p>':''}
+      <p>Die Vorschau gilt fünf Minuten.</p>
       <label class="restore-consent"><input type="checkbox" id="port-mode-consent"> Wechsel für diesen Port bestätigt</label>
       <div class="parameter-actions"><button id="confirm-port-mode" class="primary" disabled>Jetzt wechseln</button><button id="cancel-port-mode">Abbrechen</button></div>
       <p id="port-mode-progress" role="status"></p>`;
@@ -249,7 +264,11 @@ class IfmIolinkPanel extends HTMLElement {
     this.shadowRoot.querySelectorAll('[data-value]').forEach(e=>{const [port,key]=e.dataset.value.split(':');const item=master.ports[port];const field=this.profile(item?.profile)?.fields.find(f=>f.key===key);if(field)e.textContent=formatValue(master.online&&item.connected&&!item.error?item.values[key]:null,field);});
     this.shadowRoot.querySelectorAll('[data-status]').forEach(e=>{const item=master.ports[e.dataset.status];const online=master.online&&item?.connected;e.textContent=online?'● Verbunden':'○ Offline';e.classList.toggle('offline',!online);});
     this.shadowRoot.querySelectorAll('[data-pin2]').forEach(e=>{const item=master.ports[e.dataset.pin2];e.classList.toggle('io-on',!!item?.pin2);});
-    this.shadowRoot.querySelectorAll('[data-do]').forEach(e=>{const item=master.ports[e.dataset.do];e.classList.toggle('io-on',!!item?.pdout && item.pdout!=='00');});
+    this.shadowRoot.querySelectorAll('[data-pin4]').forEach(e=>{
+      const item=master.ports[e.dataset.pin4];
+      const on=item?.mode===2?(item?.pdout && item.pdout!=='00'):item?.mode===1?!!item?.pin4:false;
+      e.classList.toggle('io-on',!!on);
+    });
     const pin2=this.shadowRoot.querySelector('#pin2');if(pin2)pin2.textContent=this.selected?.pin2==null?'—':this.selected.pin2?'Aktiv':'Inaktiv';
     const raw=this.shadowRoot.querySelector('#raw');if(raw)raw.textContent=this.selected?.raw || 'Keine Prozessdaten';
     const error=this.shadowRoot.querySelector('#decode-error');if(error)error.textContent=this.selected?.error || '';

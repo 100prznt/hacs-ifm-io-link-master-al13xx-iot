@@ -60,6 +60,7 @@ def instance(module, condition_value=0):
         master = {}
         mode = 3
         pdout = "01"
+        pdin1 = "08980101"
 
         async def multi(self, paths):
             if self.fail:
@@ -67,7 +68,7 @@ def instance(module, condition_value=0):
             result = {}
             for port in (1, 2):
                 for name, value in {
-                    "pdin": "08980101" if port == 1 else "BAD",
+                    "pdin": self.pdin1 if port == 1 else "BAD",
                     "status": 2,
                     "vendorid": 310,
                     "deviceid": self.device,
@@ -156,6 +157,23 @@ def test_pdout_is_only_read_and_exposed_for_ports_switched_to_do(coordinator_mod
     result = asyncio.run(c._async_update_data())
     assert result["1"]["pdout"] == "01"
     assert result["2"]["pdout"] is None  # port 2 was never switched to DO
+
+
+def test_pin4_di_value_is_only_exposed_for_ports_switched_to_di(coordinator_module):
+    c, client = instance(coordinator_module)
+    c.entry.options["ports"]["1"]["mode"] = 1
+    client.pdin1 = "01"
+    result = asyncio.run(c._async_update_data())
+    assert result["1"]["pin4"] is True
+    assert result["2"]["pin4"] is None  # port 2 was never switched to DI
+
+
+def test_pin4_di_value_reads_rest_state_as_off(coordinator_module):
+    c, client = instance(coordinator_module)
+    c.entry.options["ports"]["1"]["mode"] = 1
+    client.pdin1 = "00"
+    result = asyncio.run(c._async_update_data())
+    assert result["1"]["pin4"] is False
 
 
 def test_master_diagnostics_missing_paths_stay_none(coordinator_module):

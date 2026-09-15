@@ -53,11 +53,18 @@ def test_preview_reports_current_state_and_rejects_noop():
         asyncio.run(prepare_mode_change(c, 1, 3))  # already IO-Link
 
 
-@pytest.mark.parametrize("target", [0, 1, 4])
-def test_only_do_and_iolink_are_switchable_targets(target):
+@pytest.mark.parametrize("target", [4, -1, 99])
+def test_out_of_range_targets_are_rejected(target):
     c, *_ = setup()
     with pytest.raises(ValueError):
         asyncio.run(prepare_mode_change(c, 1, target))
+
+
+@pytest.mark.parametrize("target", [0, 1])
+def test_disabled_and_di_are_switchable_targets(target):
+    c, *_ = setup(mode=3)
+    plan = asyncio.run(prepare_mode_change(c, 1, target))
+    assert plan["target_mode"] == target
 
 
 def test_unknown_port_or_unread_mode_cannot_be_previewed():

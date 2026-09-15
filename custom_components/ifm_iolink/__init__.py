@@ -77,6 +77,8 @@ async def async_setup_entry(hass, entry):
         assignment = entry.options.get("ports", {}).get(str(port), {})
         if assignment.get("mode") == 2:
             expected.add(prefix + "pin4_do")
+        if assignment.get("mode") == 1:
+            expected.add(prefix + "pin4_di")
         profile_id = assignment.get("profile", "unknown")
         profile = coordinator.library.all.get(profile_id, {})
         expected.update(prefix + profile_id + "_" + field["key"] for field in profile.get("fields", []))

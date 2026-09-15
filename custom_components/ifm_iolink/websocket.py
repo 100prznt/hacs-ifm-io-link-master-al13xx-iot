@@ -551,7 +551,7 @@ async def set_port_mode(hass, connection, message):
         )
         ports = {**coordinator.entry.options.get("ports", {})}
         updated = {**ports.get(str(message["port"]), {}), "mode": result["mode"]}
-        if result["mode"] == 2:
+        if result["mode"] != 3:
             updated["profile"], updated["entities"] = "unknown", []
         ports[str(message["port"])] = updated
         hass.config_entries.async_update_entry(coordinator.entry, options={**coordinator.entry.options, "ports": ports})

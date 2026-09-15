@@ -1,6 +1,6 @@
 # Pin 2 als Digitaleingang + Portmodus-Umschaltung (Pin 4)
 
-Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Teil 1 ist umgesetzt (ab Version 0.4.0, Bugfix in 0.4.2). Teil 2 ist ab 0.5.0 vollständig umgesetzt (Backend, Websocket-Commands, Panel-Vorschau/Bestätigung, `switch`-Plattform für den DO-Ausgangszustand), siehe Abschnitt "Stand nach 0.5.0" unten. Teil 3 (Pin 4 als Digitaleingang, 2× DI) ist geplant, API-Pfad verifiziert, aber noch nicht implementiert – siehe "Teil 3" unten.
+Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Teil 1 ist umgesetzt (ab Version 0.4.0, Bugfix in 0.4.2). Teil 2 ist ab 0.5.0 vollständig umgesetzt (Backend, Websocket-Commands, Panel-Vorschau/Bestätigung, `switch`-Plattform für den DO-Ausgangszustand), siehe Abschnitt "Stand nach 0.5.0" unten. Teil 3 (Pin 4 als Digitaleingang, 2× DI, volle 4-Wege-Moduswahl) ist ab 0.7.0 umgesetzt – siehe "Teil 3" unten. Die tatsächliche Signalauswertung am realen Sensor steht noch aus.
 
 ## Context
 
@@ -94,7 +94,9 @@ Umgesetzt: `IfmClient.write_port_output()` in `api.py`, `pdout`-Read im Coordina
 4. Vor der `switch.py`-Implementierung noch das exakte `pdout`-Byteformat für den DO-Fall an einem Port mit `mode=DO` gegenlesen (z. B. Ausgang manuell schalten und `pdout` per `getdata` beobachten).
 5. Manueller Test im Command Center (`scripts/preview.py` für UI-Layout, echter Master für Funktionstest): Portmodus-Wechsel eines Test-Ports zu DO, Ausgang per neuem `switch`-Entity schalten, zurück zu IO-Link wechseln und prüfen, dass der ursprüngliche Sensor wieder erkannt wird.
 
-## Teil 3 – Vollständige Portmodus-Auswahl (Deaktiviert/DI/DO/IO-Link) + Pin 4 als Digitaleingang — offen (geplant nach 0.6.1)
+## Teil 3 – Vollständige Portmodus-Auswahl (Deaktiviert/DI/DO/IO-Link) + Pin 4 als Digitaleingang — umgesetzt (ab 0.7.0)
+
+Alle unten geplanten Änderungen sind umgesetzt: `SWITCHABLE_MODES` deckt `{0,1,2,3}` ab, `item["pin4"]` im Coordinator, `IfmPin4DiSensor` in `binary_sensor.py`, Cleanup in `__init__.py`, verallgemeinerter Profil-Reset (`!= 3`) in `websocket.py`, sowie im Panel die 4-Wege-Auswahl (`<select>` statt Toggle-Button) und die einheitliche Portkarten-Darstellung für DO/DI/Deaktiviert inkl. `DI2`/`DI4`/`DO`-Badges mit DIN-EN-60947-5-2-Kontext im Tooltip. **Weiterhin unverifiziert:** ob `pdin`s Bit 0 im DI-Modus tatsächlich den realen Signalzustand widerspiegelt (siehe Verifikationsschritt 6/7 unten) – noch nicht am Sensor des Nutzers getestet.
 
 **Anlass:** Nutzer hat einen konkreten Sensor mit zwei separaten Schaltausgängen, der beide Signale (Pin 2 + Pin 4) gleichzeitig als Digitaleingänge braucht – nicht nur Vollständigkeit der Modus-Abdeckung.
 

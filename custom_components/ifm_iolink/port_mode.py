@@ -3,12 +3,12 @@
 from .api import data_value
 
 MODE_NAMES = {0: "Deaktiviert", 1: "Digitaleingang (DI)", 2: "Digitalausgang (DO)", 3: "IO-Link"}
-SWITCHABLE_MODES = (2, 3)
+SWITCHABLE_MODES = (0, 1, 2, 3)
 
 
 async def prepare_mode_change(coordinator, port, target_mode):
     if target_mode not in SWITCHABLE_MODES:
-        raise ValueError("Nur der Wechsel zwischen IO-Link und Digitalausgang wird unterstützt")
+        raise ValueError("Ungültiger Zielmodus")
     item = (coordinator.data or {}).get(str(port))
     if item is None:
         raise ValueError("Port nicht gefunden; Master lädt noch")

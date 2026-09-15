@@ -8,7 +8,7 @@
 
 <p align="center"><strong>Industrial sensors for your smart home.<br>Pool, heating and compressed air – connected locally, monitored together.</strong></p>
 
-[![Version](https://img.shields.io/badge/version-0.6.2-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
+[![Version](https://img.shields.io/badge/version-0.7.0-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5)](https://www.hacs.xyz/)
 [![Tests](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
@@ -39,6 +39,10 @@ Compared to the original project by JS-DE-Tech, this fork so far adds:
 - **Parameters as Home Assistant entities (from 0.2.0):** manufacturer parameters can be opted into per port in the parameter list, each becoming its own entity – a `sensor` (read-only) or, for writable integer parameters, a `number` (free numeric range) or `select` (fixed set of values, e.g. percentage steps) entity, both settable from Home Assistant too. All three read independently of the fast process-data poll: on startup, after every change, and hourly. See [Parameters as a Home Assistant entity](docs/device-profiles.md#parameter-als-home-assistant-entity) for details.
 - **Master diagnostics as entities (from 0.3.0):** supply voltage, power consumption (derived from voltage × current, since the master itself reports no direct power value), temperature and supervision status of the master (the AL1350/AL1352 itself, not the connected sensors) are each exposed as a `sensor` or `binary_sensor` entity, and shown as a summary on the port overview page too.
 - **Pin 2 digital input as an entity (from 0.4.0):** pin 2 of every IO-Link port is always a digital input at the hardware level, regardless of the port's mode or any assigned device profile. Now exposed as its own `binary_sensor` entity per port, and shown in the Command Center too.
+- **Port-mode switching for pin 4 (from 0.5.0):** pin 4 (C/Q) of every port can be switched in the Command Center between IO-Link communication and a digital output – with a checked preview and confirmation, mirroring the parameter restore flow, since switching disconnects any connected IO-Link sensor from that port. A port in DO mode additionally gets its own `switch` entity for the raw output state (on/off) – automatable like any other Home Assistant entity.
+- **Version display (from 0.6.0):** the port overview's footer shows the installed version. Update notifications themselves are deliberately not duplicated here – HACS already provides its own `update` entity for that (visible under Settings → Devices & Services or the Updates overview) once this repository has releases.
+- **Pin 2/Pin 4 status directly on the port card (from 0.6.1):** next to the connector name (X01, X02, …) a small badge shows the live state of the digital input (pin 2); if a port is configured as a digital output, a second badge for its switching state appears too, and the card centre shows "Digital output (pin 4) · 24 V, max. 300 mA" instead of "Select a device".
+- **Pin 4 as a digital input too, full mode selection (from 0.7.0):** pin 4 (C/Q) can now be switched between IO-Link, digital output, digital input and disabled (previously only IO-Link/digital output) – via a proper selector instead of a single toggle button, still with preview and confirmation. In digital-input mode, pin 4 gets its own `binary_sensor` entity, and the port card shows a matching short description and badges (`DI2`/`DI4`/`DO`) for all three non-IO-Link modes.
 
 ## Features
 
@@ -58,8 +62,10 @@ Compared to the original project by JS-DE-Tech, this fork so far adds:
 | **Parameters as entities** | Pick individual manufacturer parameters per port in the parameter list; each becomes its own `sensor` (read-only) or, for writable integer parameters, a `number` or `select` entity you can also set from Home Assistant. |
 | **Master diagnostics as entities** | Supply voltage, power consumption, temperature and supervision status of the master itself as a `sensor` or `binary_sensor` entity, and as a summary on the port overview. |
 | **Pin 2 digital input as an entity** | Pin 2 of every IO-Link port is always a digital input at the hardware level, regardless of port mode or assigned profile – available as its own `binary_sensor` entity per port. |
+| **Port-mode switching (pin 4)** | Switch between IO-Link, digital output, digital input and disabled in the Command Center – with preview and confirmation, since switching disconnects a connected sensor from the port. A DO-mode port exposes the output state as a `switch` entity, a DI-mode port the input state as a `binary_sensor` entity. |
+| **Version display** | The installed version is visible directly on the port overview. HACS shows updates themselves via its own `update` entity. |
 
-Routine measurement polling reads the devices. Manufacturer parameters selected as entities are read on startup, after every change and once an hour. **Writes otherwise only happen during an explicitly confirmed parameter restore, or when you set a parameter's `number` entity.** The integration does not configure master network settings or IO-Link port operating modes.
+Routine measurement polling reads the devices. Manufacturer parameters selected as entities are read on startup, after every change and once an hour. **Writes otherwise only happen during an explicitly confirmed parameter restore, or when you set a parameter's `number` entity.** The integration does not configure master network settings; the IO-Link port operating mode (IO-Link/digital output/digital input/disabled) can only be changed via the checked preview in the Command Center since 0.5.0, never automatically or through an automation.
 
 ## A look inside the Command Center
 

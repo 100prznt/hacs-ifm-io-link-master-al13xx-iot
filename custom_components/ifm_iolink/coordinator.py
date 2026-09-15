@@ -98,6 +98,7 @@ class IfmCoordinator(DataUpdateCoordinator):
                 "pin2": data_value(response, f"/iolinkmaster/port[{port}]/pin2in"),
                 "mode": identity.get("mode"),
                 "pdout": data_value(response, port_path(port, "pdout")) if assignment.get("mode") == 2 else None,
+                "pin4": (raw not in (None, "00")) if assignment.get("mode") == 1 else None,
                 "connected": connected,
                 "profile": profile_id,
                 "assignment": assignment,

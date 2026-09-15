@@ -12,7 +12,10 @@ async def async_setup_entry(hass, entry, async_add_entities):
     for port in range(1, coordinator.identity["ports"] + 1):
         entities.append(IfmBinarySensor(coordinator, port))
         entities.append(IfmPin2Sensor(coordinator, port))
-        assigned = entry.options.get("ports", {}).get(str(port), {}).get("profile")
+        assignment = entry.options.get("ports", {}).get(str(port), {})
+        if assignment.get("mode") == 1:
+            entities.append(IfmPin4DiSensor(coordinator, port))
+        assigned = assignment.get("profile")
         profile = coordinator.library.all.get(assigned, {})
         entities.extend(
             IfmBinarySensor(coordinator, port, field) for field in profile.get("fields", []) if field["type"] == "bool"
@@ -45,6 +48,24 @@ class IfmPin2Sensor(IfmEntity, BinarySensorEntity):
     def is_on(self):
         value = self.port_data.get("pin2")
         return None if value is None else bool(value)
+
+
+class IfmPin4DiSensor(IfmEntity, BinarySensorEntity):
+    """Pin 4/C-Q digital input, once a port has been switched to digital-input mode."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, port):
+        super().__init__(coordinator, port, kind="pin4_di", name="Digitaleingang (Pin 4)")
+
+    @property
+    def is_on(self):
+        value = self.port_data.get("pin4")
+        return None if value is None else bool(value)
+
+    @property
+    def available(self):
+        return super().available and self.port_data.get("assignment", {}).get("mode") == 1
 
 
 class IfmMasterStatus(IfmMasterEntity, BinarySensorEntity):
