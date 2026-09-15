@@ -55,6 +55,10 @@ class IfmCoordinator(DataUpdateCoordinator):
             status = data_value(response, port_path(port, "status"))
             identity["status"] = status
             raw = data_value(response, port_path(port, "pdin"))
+            _LOGGER.debug(
+                "port %s pin2in path=%s raw_entry=%r", key, port_path(port, "pin2in"),
+                response.get(port_path(port, "pin2in"))
+            )
             assignment = self.entry.options.get("ports", {}).get(key, {})
             profile_id = assignment.get("profile", "unknown")
             profile = self.library.all.get(profile_id)
