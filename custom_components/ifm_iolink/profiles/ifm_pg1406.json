@@ -829,7 +829,9 @@
             "length": 1,
             "shift": 0,
             "bits": 8,
-            "precision": 0
+            "precision": 0,
+            "min": 0,
+            "max": 100
           }
         ]
       }

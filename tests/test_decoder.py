@@ -168,3 +168,31 @@ def test_encode_parameter_rejects_out_of_range_and_non_writable():
         encode_parameter(p, 256)
     with pytest.raises(ValueError):
         encode_parameter(parameter("pn7096_default", 560), 1)  # read-only
+
+
+def test_min_max_narrows_the_writable_range_below_the_bit_width():
+    # PG1406 index 802 (display brightness) is a uint8 but the device only accepts 0-100;
+    # writing higher values fails on real hardware with ifm error code 531.
+    p = parameter("ifm_pg1406", 802)
+    field = p["decoder"]["fields"][0]
+    assert (field["min"], field["max"]) == (0, 100)
+    assert numeric_range(field) == (0, 100)
+    assert encode_parameter(p, 100) == "64"
+    with pytest.raises(ValueError):
+        encode_parameter(p, 150)
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"min": 0, "max": 300},  # above the uint8 bit width
+        {"min": 50, "max": 10},  # min > max
+        {"min": 1.5, "max": 10},  # not an integer
+        {"max": 100, "type": "bool"},  # min/max only allowed for uint/int
+    ],
+)
+def test_reject_invalid_min_max_definitions(changes):
+    p = copy.deepcopy(parameter("ifm_pg1406", 802))
+    p["decoder"]["fields"][0].update(changes)
+    with pytest.raises(ValueError):
+        validate_profile(p["decoder"])

@@ -42,6 +42,8 @@ FIELD_KEYS = {
     "invalid_when",
     "precision",
     "mask",
+    "min",
+    "max",
 }
 
 
@@ -158,6 +160,15 @@ def validate_profile(profile: dict, *, custom: bool = False) -> dict:
             if field["type"] != "bool":
                 raise ValueError("mask wird nur für binäre Sammelmeldungen unterstützt")
             _integer(field["mask"], 1, (1 << (size * 8 - shift)) - 1, f"{key}.mask")
+        if "min" in field or "max" in field:
+            # Raw-value bounds narrower than the bit width, e.g. a device accepting only 0-100 of a uint8.
+            if field["type"] not in ("uint", "int"):
+                raise ValueError(f"{key}: min/max nur für uint oder int erlaubt")
+            bits = field.get("bits", size * 8 - shift)
+            bit_lo, bit_hi = (-(1 << (bits - 1)), (1 << (bits - 1)) - 1) if field["type"] == "int" else (0, (1 << bits) - 1)
+            lo, hi = field.get("min", bit_lo), field.get("max", bit_hi)
+            if type(lo) is not int or type(hi) is not int or not bit_lo <= lo <= hi <= bit_hi:
+                raise ValueError(f"{key}: min/max müssen ganzzahlig sein, im Wertebereich liegen und min <= max erfüllen")
         invalid = field.get("invalid_values", [])
         if (
             not isinstance(invalid, list)
@@ -256,13 +267,19 @@ def parameter_entity_kind(parameter: dict) -> str:
     return "number" if trivial else "sensor"
 
 
-def numeric_range(field: dict) -> tuple[float, float]:
-    """Value bounds for a full-byte int/uint field, after scale and add."""
+def _raw_bounds(field: dict) -> tuple[int, int]:
+    """Raw-value bounds: the field's explicit min/max if given, else the full bit width."""
     size = field.get("length", TYPES[field["type"]] or 1)
     bits = field.get("bits", size * 8)
+    bit_lo, bit_hi = (-(1 << (bits - 1)), (1 << (bits - 1)) - 1) if field["type"] == "int" else (0, (1 << bits) - 1)
+    return field.get("min", bit_lo), field.get("max", bit_hi)
+
+
+def numeric_range(field: dict) -> tuple[float, float]:
+    """Value bounds for a full-byte int/uint field, after scale and add."""
     scale = field.get("scale", 1)
     add = field.get("add", 0)
-    lo, hi = (-(1 << (bits - 1)), (1 << (bits - 1)) - 1) if field["type"] == "int" else (0, (1 << bits) - 1)
+    lo, hi = _raw_bounds(field)
     bounds = (lo * scale + add, hi * scale + add)
     return min(bounds), max(bounds)
 
@@ -278,8 +295,7 @@ def encode_parameter(parameter: dict, value) -> str:
     scale = field.get("scale", 1)
     add = field.get("add", 0)
     raw = round((value - add) / scale) if scale else int(value)
-    bits = size * 8
-    lo, hi = (-(1 << (bits - 1)), (1 << (bits - 1)) - 1) if field["type"] == "int" else (0, (1 << bits) - 1)
+    lo, hi = _raw_bounds(field)
     if not lo <= raw <= hi:
         raise ValueError("Wert außerhalb des zulässigen Bereichs")
     return raw.to_bytes(size, field.get("endian", "big"), signed=(field["type"] == "int")).hex().upper()
