@@ -227,12 +227,13 @@ class IfmIolinkPanel extends HTMLElement {
     const grid=this.shadowRoot.querySelector('.topology-grid');const svg=this.shadowRoot.querySelector('.wires');const picture=this.shadowRoot.querySelector('.master-device img');if(!grid||!svg||!picture)return;
     const box=grid.getBoundingClientRect(), img=picture.getBoundingClientRect();if(!img.height)return;
     const rows=this.master.identity.model==='AL1350'?[.66,.83]:[.477,.61,.744,.88];
+    const lanes=rows.length===4?[0,1,1,0]:rows.map(()=>0);
     svg.setAttribute('viewBox',`0 0 ${box.width} ${box.height}`);svg.replaceChildren();
     this.shadowRoot.querySelectorAll('[data-port]').forEach(card=>{
-      const port=Number(card.dataset.port),left=port%2===1,rect=card.getBoundingClientRect();
+      const port=Number(card.dataset.port),left=port%2===1,rect=card.getBoundingClientRect(),rowIndex=Math.floor((port-1)/2);
       const x=(left?rect.right:rect.left)-box.left,y=(rect.top+rect.height/2)-box.top;
-      const endX=img.left-box.left+img.width*(left?.275:.73),endY=img.top-box.top+img.height*rows[Math.floor((port-1)/2)];
-      const elbow=(left?img.left-9:img.right+9)-box.left,color=port===this.port?'#e58b40':'#a9becd';
+      const endX=img.left-box.left+img.width*(left?.275:.73),endY=img.top-box.top+img.height*rows[rowIndex];
+      const elbow=(left?img.left-9-lanes[rowIndex]*7:img.right+9+lanes[rowIndex]*7)-box.left,color=port===this.port?'#e58b40':'#a9becd';
       const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',`M ${x} ${y} H ${elbow} V ${endY} H ${endX}`);path.setAttribute('fill','none');path.setAttribute('stroke',color);path.setAttribute('stroke-width','1.5');svg.append(path);
       const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');dot.setAttribute('cx',endX);dot.setAttribute('cy',endY);dot.setAttribute('r','3');dot.setAttribute('fill',color);svg.append(dot);
     });
