@@ -11,7 +11,7 @@
 [![Version](https://img.shields.io/badge/version-0.7.1-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5)](https://www.hacs.xyz/)
-[![Tests](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
+[![Tests](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
 [![Local](https://img.shields.io/badge/Connection-Local-success)](#features)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/LICENSE)
 [![Support via PayPal](https://img.shields.io/badge/Support%20via-PayPal-0070BA?logo=paypal&logoColor=white)](https://paypal.me/JensSaffrich)
