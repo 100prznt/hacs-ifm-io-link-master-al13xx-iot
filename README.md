@@ -16,6 +16,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/blob/main/LICENSE)
 [![Unterstützen via PayPal](https://img.shields.io/badge/Support%20via-PayPal-0070BA?logo=paypal&logoColor=white)](https://paypal.me/JensSaffrich)
 
+> 🔀 **Dies ist ein Fork.** Dieses Repository ist ein Fork von [JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot), weiterentwickelt von [100prznt](https://github.com/100prznt). Er enthält zusätzliche, hier entstandene Änderungen gegenüber dem Original – siehe [Änderungen in diesem Fork](#änderungen-in-diesem-fork).
+
 Das **ifm IO-Link Command Center** verbindet die IO-Link-Master **AL1350 und AL1352 mit IoT Core** direkt mit Home Assistant. Druck, Durchfluss, Temperatur und Gerätezustände werden zu nutzbaren Entitäten für Dashboards, Verläufe und eigene Automationen – ohne Cloud, MQTT-Broker oder Node-RED als Zwischenstation.
 
 Im grafischen Command Center steht der Master in der Mitte. Seine Ports führen zu den angeschlossenen Geräten mit Bild, Bezeichnung, Standort, Verwendungszweck und Live-Messwerten. Eine gemeinsame Gerätebibliothek, IODD-Import und Parametersicherungen machen aus einzelnen Sensoren eine übersichtliche Anlage.
@@ -29,8 +31,6 @@ Im grafischen Command Center steht der Master in der Mitte. Seine Ports führen 
 <p align="center"><a href="#funktionen">Funktionen</a> · <a href="#mein-praxisprojekt">Praxisprojekt</a> · <a href="#installation">Installation</a> · <a href="#parametersicherung--sensortausch">Parametersicherung</a> · <a href="#eigene-ger%C3%A4te--iodd-import">Eigene Geräte</a></p>
 
 > **Stand 0.1.3:** Erste öffentliche Testversion. AL1350, PN7094, PN7096 und BADU FlowSonic Plus wurden an einer realen Anlage mit Home Assistant 2026.8.3 geprüft. AL1352 wird im Code unterstützt, ist aber noch nicht an realer Hardware getestet. Die Oberfläche des Command Centers ist derzeit deutsch.
-
-> 🔀 **Dies ist ein Fork.** Dieses Repository ist ein Fork von [JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot), weiterentwickelt von [100prznt](https://github.com/100prznt). Er enthält zusätzliche, hier entstandene Änderungen gegenüber dem Original – siehe [Änderungen in diesem Fork](#änderungen-in-diesem-fork).
 
 ## Änderungen in diesem Fork
 
