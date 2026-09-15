@@ -44,5 +44,5 @@ async def execute_mode_change(coordinator, port, plan, still_current=lambda: Tru
         # leaving it in the error state the device reports for an unwritten DO output.
         await coordinator.client.write_port_output(port, False)
     coordinator.condition_values = {key: value for key, value in coordinator.condition_values.items() if key[0] != port}
-    coordinator.metadata_at = 0
+    coordinator.metadata_at = None
     return {"port": port, "mode": actual}

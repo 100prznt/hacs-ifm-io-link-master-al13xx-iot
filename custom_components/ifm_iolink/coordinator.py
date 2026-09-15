@@ -26,13 +26,15 @@ class IfmCoordinator(DataUpdateCoordinator):
         )
         self.entry, self.client, self.identity, self.library = entry, client, identity, library
         self.metadata = {}
-        self.metadata_at = 0
+        self.metadata_at = None
         self.condition_values = {}
         self.master_diagnostics = {}
         self.samples = {str(port): deque(maxlen=30) for port in range(1, identity["ports"] + 1)}
 
     async def _async_update_data(self):
-        refresh_metadata = time.monotonic() - self.metadata_at >= 60
+        # time.monotonic()'s absolute value is arbitrary (e.g. time since boot on Linux), so it can
+        # already be under 60 on a freshly booted host; metadata_at must start at None, not 0.
+        refresh_metadata = self.metadata_at is None or time.monotonic() - self.metadata_at >= 60
         paths = list(MASTER_DIAGNOSTIC_PATHS)
         for port in range(1, self.identity["ports"] + 1):
             paths.extend(port_path(port, name) for name in ("pdin", "status"))

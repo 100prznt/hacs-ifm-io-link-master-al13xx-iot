@@ -83,7 +83,7 @@ def test_execute_writes_reads_back_and_clears_port_conditions():
     assert writes == [(1, 2)]
     assert result == {"port": 1, "mode": 2}
     assert c.condition_values == {(2, "prof", 64): 0}
-    assert c.metadata_at == 0
+    assert c.metadata_at is None
 
 
 def test_switching_to_do_initializes_pdout_to_off():

@@ -101,6 +101,16 @@ def test_one_bad_port_does_not_remove_other_measurement(coordinator_module):
     result = asyncio.run(c._async_update_data())
     assert result["1"]["values"]["pd_1"] == 0.22
     assert result["2"]["error"]
+
+
+def test_metadata_refreshes_on_first_update_even_with_a_low_monotonic_clock(coordinator_module, monkeypatch):
+    # time.monotonic()'s absolute value is arbitrary (e.g. time since boot on Linux) and can
+    # already be under 60 right after the host starts - metadata_at must not treat that as "recent".
+    monkeypatch.setattr(coordinator_module.time, "monotonic", lambda: 5.0)
+    c, _ = instance(coordinator_module)
+    result = asyncio.run(c._async_update_data())
+    assert result["1"]["values"]["pd_1"] == 0.22
+    assert result["1"]["identity"]["vendorid"] == 310
     assert result["2"]["values"] == {}
 
 
