@@ -11,6 +11,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
     entities = [IfmMasterStatus(coordinator)]
     for port in range(1, coordinator.identity["ports"] + 1):
         entities.append(IfmBinarySensor(coordinator, port))
+        entities.append(IfmPin2Sensor(coordinator, port))
         assigned = entry.options.get("ports", {}).get(str(port), {}).get("profile")
         profile = coordinator.library.all.get(assigned, {})
         entities.extend(
@@ -30,6 +31,20 @@ class IfmBinarySensor(IfmEntity, BinarySensorEntity):
         if self.field is None:
             return self.port_data.get("connected", False)
         return self.port_data.get("values", {}).get(self.field["key"])
+
+
+class IfmPin2Sensor(IfmEntity, BinarySensorEntity):
+    """Pin 2 digital input; always active on the master regardless of port mode or assigned profile."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, port):
+        super().__init__(coordinator, port, kind="pin2", name="Digitaleingang (Pin 2)")
+
+    @property
+    def is_on(self):
+        value = self.port_data.get("pin2")
+        return None if value is None else bool(value)
 
 
 class IfmMasterStatus(IfmMasterEntity, BinarySensorEntity):

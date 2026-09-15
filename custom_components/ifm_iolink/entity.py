@@ -30,7 +30,7 @@ def _device_info(coordinator, port, assignment, profile):
 class IfmEntity(CoordinatorEntity):
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator, port, field=None):
+    def __init__(self, coordinator, port, field=None, kind="connection", name="Verbindung"):
         super().__init__(coordinator)
         self.port = str(port)
         self.field = field
@@ -38,10 +38,10 @@ class IfmEntity(CoordinatorEntity):
         self.profile_id = assignment.get("profile", "unknown")
         profile = coordinator.library.all.get(self.profile_id, {})
         serial = coordinator.identity["serial"]
-        suffix = f"{self.profile_id}_{field['key']}" if field else "connection"
+        suffix = f"{self.profile_id}_{field['key']}" if field else kind
         self._attr_unique_id = f"{serial}_port_{port}_{suffix}"
         self._attr_device_info = _device_info(coordinator, port, assignment, profile)
-        self._attr_name = field.get("name", field["key"]) if field else "Verbindung"
+        self._attr_name = field.get("name", field["key"]) if field else name
 
     @property
     def port_data(self):

@@ -35,7 +35,7 @@ class IfmCoordinator(DataUpdateCoordinator):
         refresh_metadata = time.monotonic() - self.metadata_at >= 60
         paths = list(MASTER_DIAGNOSTIC_PATHS)
         for port in range(1, self.identity["ports"] + 1):
-            paths.extend(port_path(port, name) for name in ("pdin", "status"))
+            paths.extend(port_path(port, name) for name in ("pdin", "status", "pin2in"))
             if refresh_metadata:
                 paths.extend(port_path(port, name) for name in PORT_PROPERTIES if name != "status")
         try:
@@ -90,6 +90,7 @@ class IfmCoordinator(DataUpdateCoordinator):
                 "port": port,
                 "identity": dict(identity),
                 "raw": raw,
+                "pin2": data_value(response, port_path(port, "pin2in")),
                 "connected": connected,
                 "profile": profile_id,
                 "assignment": assignment,

@@ -72,6 +72,7 @@ async def async_setup_entry(hass, entry):
     for port in range(1, identity["ports"] + 1):
         prefix = f"{identity['serial']}_port_{port}_"
         expected.add(prefix + "connection")
+        expected.add(prefix + "pin2")
         assignment = entry.options.get("ports", {}).get(str(port), {})
         profile_id = assignment.get("profile", "unknown")
         profile = coordinator.library.all.get(profile_id, {})
