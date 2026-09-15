@@ -35,7 +35,8 @@ class IfmCoordinator(DataUpdateCoordinator):
         refresh_metadata = time.monotonic() - self.metadata_at >= 60
         paths = list(MASTER_DIAGNOSTIC_PATHS)
         for port in range(1, self.identity["ports"] + 1):
-            paths.extend(port_path(port, name) for name in ("pdin", "status", "pin2in"))
+            paths.extend(port_path(port, name) for name in ("pdin", "status"))
+            paths.append(f"/iolinkmaster/port[{port}]/pin2in")
             if refresh_metadata:
                 paths.extend(port_path(port, name) for name in PORT_PROPERTIES if name != "status")
         try:
@@ -55,10 +56,6 @@ class IfmCoordinator(DataUpdateCoordinator):
             status = data_value(response, port_path(port, "status"))
             identity["status"] = status
             raw = data_value(response, port_path(port, "pdin"))
-            _LOGGER.debug(
-                "port %s pin2in path=%s raw_entry=%r", key, port_path(port, "pin2in"),
-                response.get(port_path(port, "pin2in"))
-            )
             assignment = self.entry.options.get("ports", {}).get(key, {})
             profile_id = assignment.get("profile", "unknown")
             profile = self.library.all.get(profile_id)
@@ -94,7 +91,7 @@ class IfmCoordinator(DataUpdateCoordinator):
                 "port": port,
                 "identity": dict(identity),
                 "raw": raw,
-                "pin2": data_value(response, port_path(port, "pin2in")),
+                "pin2": data_value(response, f"/iolinkmaster/port[{port}]/pin2in"),
                 "connected": connected,
                 "profile": profile_id,
                 "assignment": assignment,
