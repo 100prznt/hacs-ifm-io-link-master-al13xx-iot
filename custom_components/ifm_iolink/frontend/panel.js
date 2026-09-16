@@ -35,7 +35,7 @@ class IfmIolinkPanel extends HTMLElement {
   notify(message,error=false){const el=this.shadowRoot.querySelector('#notice');if(el){el.textContent=message;el.className=error?'notice error':'notice';}}
   render() {
     const master=this.master;
-    this.shadowRoot.innerHTML=`<link rel="stylesheet" href="${BASE}/panel.css"><div class="app">
+    this.shadowRoot.innerHTML=`<link rel="stylesheet" href="${BASE}/panel.css?v=${esc(this.data.version || '')}"><div class="app">
       <header><div class="brand"><img class="brand-icon" src="${BASE}/images/integration-icon.png" alt="ifm IO-Link Logo"><div><span class="eyebrow">LOKAL VERBUNDEN</span><h1>ifm IO-Link Command Center</h1></div></div><div class="header-actions"><a href="/config/integrations/dashboard/add?domain=ifm_iolink">+ Master hinzufügen</a><span class="tag">AL1350 or AL1352 with IoT core</span></div></header>
       <div class="toolbar"><nav><button data-page="overview" class="${this.page==='overview'?'active':''}">Portübersicht</button><button data-page="library" class="${this.page==='library'?'active':''}">Gerätebibliothek <span>${this.data.profiles.length}</span></button></nav>
       ${master?`<label class="master-choice">Master <select id="master">${this.data.masters.map(m=>`<option value="${esc(m.entry_id)}" ${m===master?'selected':''}>${esc(m.name)}</option>`).join('')}</select></label>`:''}</div>
