@@ -25,12 +25,11 @@ Im grafischen Command Center steht der Master in der Mitte. Seine Ports führen 
 **Ein Projekt von [JS-DE-Tech](https://github.com/JS-DE-Tech), entstanden aus einer realen Pool-, Heizungs- und Druckluftinstallation.**
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/main/docs/images/screenshots/portuebersicht.png" alt="Command Center: AL1350 mit verbundenen Sensoren, Live-Messwerten und Portzuweisung" width="1100">
+  <img src="docs/images/screenshots/portuebersicht_v0_7.png" alt="Command Center: AL1352 mit verbundenen Sensoren, Live-Messwerten, Portzuweisung und DIO-Anzeige" width="1100">
 </p>
 
 <p align="center"><a href="#funktionen">Funktionen</a> · <a href="#mein-praxisprojekt">Praxisprojekt</a> · <a href="#installation">Installation</a> · <a href="#parametersicherung--sensortausch">Parametersicherung</a> · <a href="#eigene-ger%C3%A4te--iodd-import">Eigene Geräte</a></p>
 
-> **Stand 0.1.3:** Erste öffentliche Testversion. AL1350, PN7094, PN7096 und BADU FlowSonic Plus wurden an einer realen Anlage mit Home Assistant 2026.8.3 geprüft. AL1352 wird im Code unterstützt, ist aber noch nicht an realer Hardware getestet. Die Oberfläche des Command Centers ist derzeit deutsch.
 
 ## Änderungen in diesem Fork
 
