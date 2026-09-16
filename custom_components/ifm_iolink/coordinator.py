@@ -39,7 +39,12 @@ class IfmCoordinator(DataUpdateCoordinator):
         for port in range(1, self.identity["ports"] + 1):
             paths.extend(port_path(port, name) for name in ("pdin", "status"))
             paths.append(f"/iolinkmaster/port[{port}]/pin2in")
-            if self.entry.options.get("ports", {}).get(str(port), {}).get("mode") == 2:
+            # Gated on the device's own last-known mode too, not just the saved assignment: right
+            # after a mode switch (or if a port was put into DO some other way) the assignment can
+            # briefly lag the device, and skipping the read then would leave pdout stuck at None.
+            assignment_mode = self.entry.options.get("ports", {}).get(str(port), {}).get("mode")
+            known_mode = self.metadata.get(str(port), {}).get("mode")
+            if 2 in (assignment_mode, known_mode) or refresh_metadata:
                 paths.append(port_path(port, "pdout"))
             if refresh_metadata:
                 paths.extend(port_path(port, name) for name in PORT_PROPERTIES if name != "status")
@@ -99,8 +104,14 @@ class IfmCoordinator(DataUpdateCoordinator):
                 "raw": raw,
                 "pin2": data_value(response, f"/iolinkmaster/port[{port}]/pin2in"),
                 "mode": identity.get("mode"),
-                "pdout": data_value(response, port_path(port, "pdout")) if assignment.get("mode") == 2 else None,
-                "pin4": (raw not in (None, "00")) if assignment.get("mode") == 1 else None,
+                "pdout": (
+                    data_value(response, port_path(port, "pdout"))
+                    if 2 in (assignment.get("mode"), identity.get("mode"))
+                    else None
+                ),
+                "pin4": (
+                    (raw not in (None, "00")) if 1 in (assignment.get("mode"), identity.get("mode")) else None
+                ),
                 "connected": connected,
                 "profile": profile_id,
                 "assignment": assignment,

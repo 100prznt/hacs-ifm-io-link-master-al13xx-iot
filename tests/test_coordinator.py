@@ -169,6 +169,20 @@ def test_pdout_is_only_read_and_exposed_for_ports_switched_to_do(coordinator_mod
     assert result["2"]["pdout"] is None  # port 2 was never switched to DO
 
 
+def test_pdout_is_read_when_device_reports_do_even_if_assignment_is_stale(coordinator_module):
+    # The saved assignment (options) can lag behind the device's own reported mode - e.g. right
+    # after a mode switch, or if the port was put into DO some other way. The panel badge colors
+    # a port based on the device's own reported mode (item["mode"]), so pdout must be fetched
+    # whenever the device says DO, not only when the saved assignment already agrees - otherwise
+    # the badge shows "DO" but never colors it, because pdout stays None.
+    c, client = instance(coordinator_module)
+    client.mode = 2
+    client.pdout = "01"
+    result = asyncio.run(c._async_update_data())
+    assert result["1"]["mode"] == 2
+    assert result["1"]["pdout"] == "01"
+
+
 def test_pin4_di_value_is_only_exposed_for_ports_switched_to_di(coordinator_module):
     c, client = instance(coordinator_module)
     c.entry.options["ports"]["1"]["mode"] = 1
@@ -184,6 +198,15 @@ def test_pin4_di_value_reads_rest_state_as_off(coordinator_module):
     client.pdin1 = "00"
     result = asyncio.run(c._async_update_data())
     assert result["1"]["pin4"] is False
+
+
+def test_pin4_di_value_is_read_when_device_reports_di_even_if_assignment_is_stale(coordinator_module):
+    c, client = instance(coordinator_module)
+    client.mode = 1
+    client.pdin1 = "01"
+    result = asyncio.run(c._async_update_data())
+    assert result["1"]["mode"] == 1
+    assert result["1"]["pin4"] is True
 
 
 def test_master_diagnostics_missing_paths_stay_none(coordinator_module):
