@@ -141,3 +141,12 @@ Getestet mit `status=0`/unbeschaltetem Port: `pdin` lieferte `"00"` (Ruhewert). 
 **Verifikation (zusätzlich zu oben) — beide erledigt (2026-09-15):**
 6. ✅ Sensor an einen DI-geschalteten Port angeschlossen: `pdin` bestätigt Bit 0 spiegelt den tatsächlichen Signalzustand wider (nicht nur den Ruhewert `"00"` bei offenem Eingang).
 7. ✅ Test mit beiden Signalen gleichzeitig (Pin 2 über `pin2in`, Pin 4 über `pdin`) am konkreten Zwei-Ausgänge-Sensor durchgeführt – beide Zustände korrekt geschaltet. Teil 3 ist damit vollständig abgeschlossen.
+
+## Nachtrag: aktives DO-Badge blieb farblos (behoben in 0.7.2/0.7.3)
+
+**Meldung (2026-09-16, Elias, am echten AL1352 im Labor, Port 3 auf DO):** Nach der Farbumstellung des DO-Badges (gelbgrün → tomatenrot, 0.7.1) blieb das Badge bei aktivem Ausgang grau statt eingefärbt, obwohl die `switch`-Entity "Digitalausgang (Pin 4)" korrekt "An" zeigte – zwei unabhängige Ursachen, beide behoben:
+
+1. **`coordinator.py` (0.7.2):** Das Panel färbt das Badge anhand des **live vom Gerät gelesenen** Modus (`item["mode"]`), ob `pdout` überhaupt abgefragt wurde, hing aber nur an der **gespeicherten Zuweisung** (`assignment.get("mode") == 2`) – zwei unterschiedliche Quellen für dasselbe Konzept, die kurz nach einem Moduswechsel oder beim allerersten Poll-Zyklus auseinanderlaufen konnten. Fix: `pdout`/`pin4` werden jetzt abgefragt/exponiert, sobald *entweder* die Zuweisung *oder* der zuletzt vom Gerät gelesene Modus DO/DI ist, inklusive unconditional auf jedem Metadaten-Refresh-Tick. Regressionstests: `test_pdout_is_read_when_device_reports_do_even_if_assignment_is_stale`, `test_pin4_di_value_is_read_when_device_reports_di_even_if_assignment_is_stale` in `tests/test_coordinator.py`.
+2. **`panel.js` (0.7.3):** Die Stylesheet-`<link>`-Injektion für `panel.css` hatte anders als `panel.js` (das schon `?v=<version>` nutzt) **kein Cache-Busting**. Ein Browser konnte dadurch trotz Hard-Reload der Seite dauerhaft eine veraltete `panel.css` (ohne die `.do-on`-Regel aus 0.7.1) ausliefern, weil das Stylesheet erst beim Aufbau des Panel-Shadow-DOM nachgeladen wird, nicht beim initialen Seitenaufruf. Fix: `href="${BASE}/panel.css?v=${this.data.version}"`.
+
+Am Nutzer bestätigt (2026-09-16, nach Update auf 0.7.3 + Neustart + Hard-Reload): Badge färbt sich jetzt korrekt tomatenrot bei aktivem Ausgang. Keine offenen Punkte mehr – der Plan bleibt abgeschlossen.
