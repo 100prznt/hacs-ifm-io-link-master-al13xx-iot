@@ -22,9 +22,11 @@ def profile(name):
     return json.loads((ROOT / "custom_components/ifm_iolink/profiles" / (name + ".json")).read_text(encoding="utf-8"))
 
 
-@pytest.mark.parametrize("name", ["pn7094", "pn7096", "pn7094_default", "pn7096_default", "badu_flowsonic_plus"])
-def test_shipped_profiles_validate(name):
-    validate_profile(profile(name))
+@pytest.mark.parametrize(
+    "path", sorted((ROOT / "custom_components/ifm_iolink/profiles").glob("*.json")), ids=lambda p: p.stem
+)
+def test_shipped_profiles_validate(path):
+    validate_profile(json.loads(path.read_text(encoding="utf-8")))
 
 
 def test_live_pn7096_samples_and_switches():
