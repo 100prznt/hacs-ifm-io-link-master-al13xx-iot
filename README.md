@@ -197,6 +197,29 @@ Der Import unterstützt unter anderem Ganzzahlen, Boolesche Werte, IEEE-754-Floa
 
 Ohne passende IODD lässt sich ein Gerät als **Unbekannt** zuweisen und eine Debug-Datei exportieren. Daraus kann ein eigenes JSON-Übersetzungsprofil entstehen, das sich direkt im Command Center testen, mit Bild und Beschreibung versehen und anschließend mehreren Ports zuweisen lässt. Profile beschreiben die Datenübersetzung; sie enthalten keinen ausführbaren Python- oder JavaScript-Code. [Profilformat und Beispiele](docs/device-profiles.md)
 
+### Eigene Kommandos definieren
+
+Ein Kommando schreibt einen festen Ganzzahlwert auf Index/Subindex 0 des Sensors – gedacht für Herstellerbefehle, die nicht in der IODD stehen, z. B. „Kalibrierung starten“. Im Profileditor gehört dazu ein `commands`-Array auf oberster Ebene, neben `parameters`:
+
+```json
+{
+  "commands": [
+    {
+      "index": 2,
+      "value": 1,
+      "name": "Kalibrierung starten",
+      "description": "Startet die Nullpunkt-Kalibrierung"
+    }
+  ]
+}
+```
+
+- `index`: Parameterindex (0–65535), innerhalb des Profils eindeutig.
+- `value`: der zu schreibende Wert, ein einzelnes Byte (0–255). Subindex ist immer 0.
+- `name`, `description`: Beschriftung und Hilfetext für den „Senden“-Button im Command Center.
+
+Im Command Center erscheint das Kommando unter **Kommandos anzeigen** neben der Parameterliste; ein Klick auf **Senden** schreibt den Wert sofort, ohne weiteren Bestätigungsdialog. Vor jedem Senden wird die Gerätekennung frisch gegen `match` geprüft, damit ein zwischenzeitlich getauschter, andersartiger Sensor nicht versehentlich denselben Befehl bekommt.
+
 ## Entwicklung, Tests und Rückmeldungen
 
 ```sh

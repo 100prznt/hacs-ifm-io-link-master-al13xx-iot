@@ -196,6 +196,29 @@ The importer supports integers, booleans, IEEE-754 floats, simple records, bit p
 
 Without a suitable IODD, assign the device as **Unbekannt** (“Unknown”) and export a debug file. This can help you create a custom JSON decoding profile, test it directly in the Command Center, add an image and description, and assign it to several ports. Profiles describe data decoding; they do not contain executable Python or JavaScript code. [Profile format and examples (German)](docs/device-profiles.md)
 
+### Defining a custom command
+
+A command writes a fixed integer value to index/subindex 0 of the sensor – meant for manufacturer commands not covered by the IODD, e.g. "start calibration". In the profile editor this is a top-level `commands` array, next to `parameters`:
+
+```json
+{
+  "commands": [
+    {
+      "index": 2,
+      "value": 1,
+      "name": "Start calibration",
+      "description": "Starts the zero-point calibration"
+    }
+  ]
+}
+```
+
+- `index`: the parameter index (0–65535), unique within the profile.
+- `value`: the value to write, a single byte (0–255). Subindex is always 0.
+- `name`, `description`: label and help text for the "Send" button in the Command Center.
+
+The command shows up in the Command Center under **Show commands**, next to the parameter list; clicking **Send** writes the value immediately, with no further confirmation dialog. Before every send, the connected device's identity is checked fresh against `match`, so a sensor swapped in the meantime doesn't accidentally receive the same command.
+
 ## Development, testing and feedback
 
 ```sh
