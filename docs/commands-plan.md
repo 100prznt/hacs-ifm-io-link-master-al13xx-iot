@@ -1,6 +1,6 @@
 # Herstellerspezifische Kommandos im Geräteprofil
 
-Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Geplant, noch nicht umgesetzt.
+Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Umgesetzt ab Version 0.8.0. Nutzerdoku dazu in `docs/device-profiles.md`.
 
 ## Context
 

@@ -99,6 +99,7 @@ def test_existing_masters_load_in_panel(ws, include_profiles):
         "test_profile",
         "import_profile",
         "read_parameter",
+        "send_command",
         "read_parameters",
         "get_parameter_backup",
         "rename_master",
@@ -451,3 +452,74 @@ def test_set_parameter_entities_validates_indices_against_profile(ws):
         assert updates[-1]["ports"]["1"]["entities"] == [10, 20]  # unchanged: the invalid request was rejected
 
     asyncio.run(run())
+
+
+def _command_coordinator(*, connected=True, identity_vendorid=310, identity_deviceid=602):
+    profile = {
+        "id": "prof",
+        "match": [{"vendorid": 310, "deviceid": 602}],
+        "commands": [{"index": 2, "value": 1, "name": "Kalibrierung starten", "description": ""}],
+    }
+    identity = {"vendorid": identity_vendorid, "deviceid": identity_deviceid, "serial": "abc", "status": 2}
+    writes = []
+
+    async def multi(paths):
+        return {p: {"code": 200, "data": identity[p.rsplit("/", 1)[-1]]} for p in paths}
+
+    async def write_parameter(port, index, raw):
+        writes.append((port, index, raw))
+
+    coordinator = SimpleNamespace(
+        entry=SimpleNamespace(options={"ports": {"1": {"profile": "prof"}}}),
+        identity={"ports": 4},
+        data={"1": {"connected": connected, "profile": "prof"}},
+        library=SimpleNamespace(all={"prof": profile}),
+        client=SimpleNamespace(multi=multi, write_parameter=write_parameter),
+    )
+    return coordinator, writes
+
+
+def _run_send_command(ws, coordinator, index=2, port=1):
+    hass = SimpleNamespace(tasks=[], data={"ifm_iolink": {"coordinators": {"entry1": coordinator}}})
+    results, errors = [], []
+    connection = SimpleNamespace(
+        user=SimpleNamespace(is_admin=True),
+        send_result=lambda *a: results.append(a),
+        send_error=lambda *a: errors.append(a),
+    )
+
+    async def run():
+        ws.send_command(hass, connection, {"id": 1, "entry_id": "entry1", "port": port, "index": index})
+        await asyncio.gather(*hass.tasks)
+
+    asyncio.run(run())
+    return results, errors
+
+
+def test_send_command_writes_the_encoded_value_after_identity_check(ws):
+    coordinator, writes = _command_coordinator()
+    results, errors = _run_send_command(ws, coordinator)
+    assert not errors
+    assert results[0][1] == {"sent": True}
+    assert writes == [(1, 2, "01")]
+
+
+def test_send_command_rejects_mismatched_identity_without_writing(ws):
+    coordinator, writes = _command_coordinator(identity_vendorid=999)
+    results, errors = _run_send_command(ws, coordinator)
+    assert errors
+    assert not writes
+
+
+def test_send_command_rejects_when_port_not_connected(ws):
+    coordinator, writes = _command_coordinator(connected=False)
+    results, errors = _run_send_command(ws, coordinator)
+    assert errors
+    assert not writes
+
+
+def test_send_command_rejects_unknown_command_index(ws):
+    coordinator, writes = _command_coordinator()
+    results, errors = _run_send_command(ws, coordinator, index=999)
+    assert errors
+    assert not writes

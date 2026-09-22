@@ -7,6 +7,7 @@ import pytest
 
 from custom_components.ifm_iolink.decoder import (
     decode,
+    encode_command,
     encode_parameter,
     numeric_range,
     parameter_entity_kind,
@@ -244,3 +245,58 @@ def test_reject_values_on_non_integer_type():
     p["decoder"]["fields"][0]["values"] = [0, 1]
     with pytest.raises(ValueError):
         validate_profile(p["decoder"])
+
+
+def test_commands_are_optional_and_default_to_empty():
+    p = copy.deepcopy(profile("pn7096"))
+    assert "commands" not in p
+    validate_profile(p)  # no commands key at all is fine
+
+
+def test_valid_command_round_trips():
+    p = copy.deepcopy(profile("pn7096"))
+    p["commands"] = [{"index": 2, "value": 1, "name": "Kalibrierung starten", "description": "Nullpunkt"}]
+    validate_profile(p)
+    assert encode_command(p["commands"][0]) == "01"
+    assert encode_command({"value": 255}) == "FF"
+    assert encode_command({"value": 0}) == "00"
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"index": -1},
+        {"index": 65536},
+        {"index": 1.5},
+        {"value": -1},
+        {"value": 256},
+        {"value": 1.5},
+        {"name": "x" * 4001},
+        {"description": "x" * 4001},
+        {"unexpected": "field"},
+    ],
+)
+def test_reject_invalid_command_definitions(changes):
+    p = copy.deepcopy(profile("pn7096"))
+    command = {"index": 2, "value": 1, "name": "Kalibrierung starten", "description": "Nullpunkt"}
+    command.update(changes)
+    p["commands"] = [command]
+    with pytest.raises(ValueError):
+        validate_profile(p)
+
+
+def test_reject_duplicate_command_index():
+    p = copy.deepcopy(profile("pn7096"))
+    p["commands"] = [
+        {"index": 2, "value": 1, "name": "A", "description": ""},
+        {"index": 2, "value": 2, "name": "B", "description": ""},
+    ]
+    with pytest.raises(ValueError):
+        validate_profile(p)
+
+
+def test_reject_too_many_commands():
+    p = copy.deepcopy(profile("pn7096"))
+    p["commands"] = [{"index": i, "value": 1, "name": str(i), "description": ""} for i in range(65)]
+    with pytest.raises(ValueError):
+        validate_profile(p)

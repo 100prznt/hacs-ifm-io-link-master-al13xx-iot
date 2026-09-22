@@ -13,9 +13,9 @@ from homeassistant.components import websocket_api
 
 from .api import IfmError
 from .const import DOMAIN
-from .decoder import decode, validate_profile
+from .decoder import decode, encode_command, validate_profile
 from .iodd import import_iodd
-from .parameters import collect_parameters, read_parameter_value
+from .parameters import collect_parameters, read_identity, read_parameter_value
 from .port_mode import execute_mode_change, prepare_mode_change
 from .restore import execute_restore, prepare_restore
 from .version import installed_version
@@ -32,6 +32,7 @@ def register_commands(hass):
         test_profile,
         import_profile,
         read_parameter,
+        send_command,
         read_parameters,
         get_parameter_backup,
         rename_master,
@@ -198,6 +199,39 @@ async def read_parameter(hass, connection, message):
         connection.send_result(message["id"], result)
     except (ValueError, IfmError) as err:
         connection.send_error(message["id"], "read_failed", str(err))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "ifm_iolink/send_command",
+        vol.Required("entry_id"): str,
+        vol.Required("port"): int,
+        vol.Required("index"): int,
+    }
+)
+@websocket_api.require_admin
+@websocket_api.async_response
+async def send_command(hass, connection, message):
+    try:
+        coordinator = coordinator_for(hass, message)
+        port_state = coordinator.data[str(message["port"])]
+        if not port_state["connected"]:
+            raise ValueError("Port nicht verbunden")
+        profile = coordinator.library.all.get(port_state["profile"], {})
+        command = next((c for c in profile.get("commands", []) if c["index"] == message["index"]), None)
+        if not command:
+            raise ValueError("Kommando nicht im zugewiesenen Profil")
+        identity = await read_identity(coordinator, message["port"])
+        matches = profile.get("match", [])
+        if matches and all(
+            identity.get("vendorid") != m["vendorid"] or identity.get("deviceid") != m["deviceid"] for m in matches
+        ):
+            raise ValueError("Gerätekennung passt nicht zum zugewiesenen Profil")
+        raw = encode_command(command)
+        await coordinator.client.write_parameter(message["port"], command["index"], raw)
+        connection.send_result(message["id"], {"sent": True})
+    except (ValueError, IfmError) as err:
+        connection.send_error(message["id"], "command_failed", str(err))
 
 
 @websocket_api.websocket_command({vol.Required("type"): "ifm_iolink/delete_profile", vol.Required("profile_id"): str})

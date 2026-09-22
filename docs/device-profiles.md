@@ -35,6 +35,7 @@ Ein Profil ist eine JSON-Datenbeschreibung. Es wird weder mit `eval` noch als Py
 - `match`: optionaler Schutz gegen falsche Gerätekennungen. Leere Liste erlaubt manuelle generische Profile. Ein Import übernimmt nur die primäre aktive Device-ID; Kompatibilitäts-IDs gelten nicht automatisch für dasselbe Layout.
 - `conditions`: optionale Liste aus `{"index": 64, "value": 0}`. Der Index wird über IO-Link nur gelesen; ein abweichender Wert sperrt die Dekodierung.
 - `parameters`: optionale herstellerspezifische Parameterliste mit Index, Name, Beschreibung und bei unterstützten Typen einem eigenen Decoder. Werte werden im Panel gezielt einzeln gelesen; komplexe Records bleiben als Rohwert zugänglich.
+- `commands`: optionale Liste fester, nicht in der IODD beschriebener Schreibkommandos, z. B. `{"index": 2, "value": 1, "name": "Kalibrierung starten", "description": "Startet die Nullpunkt-Kalibrierung"}`. Subindex ist immer 0, `value` immer ein einzelnes Byte (uint8, 0–255) – für Kommandos, die mehr als ein Byte oder einen anderen Subindex brauchen, eignet sich stattdessen ein schreibbarer `parameters`-Eintrag. Erscheint im Panel unter **Kommandos anzeigen** direkt neben der Parameterliste; ein Klick auf **Senden** schreibt den festen Wert sofort, ohne Bestätigungsdialog. Vor jedem Senden wird die Gerätekennung frisch gegen `match` geprüft, damit ein zwischenzeitlich getauschter, andersartiger Sensor nicht versehentlich denselben Befehl bekommt.
 
 ## Parameter als Home-Assistant-Entity
 

@@ -23,6 +23,7 @@ PROFILE_KEYS = {
     "length",
     "parameters",
     "conditions",
+    "commands",
 }
 FIELD_KEYS = {
     "key",
@@ -227,6 +228,21 @@ def validate_profile(profile: dict, *, custom: bool = False) -> dict:
             if not isinstance(parameter["decoder"], dict) or "parameters" in parameter["decoder"]:
                 raise ValueError("Verschachtelte Parameter sind nicht erlaubt")
             validate_profile(parameter["decoder"])
+    commands = profile.get("commands", [])
+    if not isinstance(commands, list) or len(commands) > 64:
+        raise ValueError("Maximal 64 Kommandos erlaubt")
+    seen_commands = set()
+    for command in commands:
+        if not isinstance(command, dict) or set(command) - {"index", "name", "description", "value"}:
+            raise ValueError("Ungültige Kommandodefinition")
+        _integer(command.get("index"), 0, 65535, "Kommandoindex")
+        if command["index"] in seen_commands:
+            raise ValueError("Kommandoindex muss innerhalb des Profils eindeutig sein")
+        seen_commands.add(command["index"])
+        _integer(command.get("value"), 0, 255, "Kommandowert")
+        for key in ("name", "description"):
+            if not isinstance(command.get(key, ""), str) or len(command.get(key, "")) > 4000:
+                raise ValueError("Ungültiger Kommandotext")
     return profile
 
 
@@ -320,6 +336,11 @@ def encode_parameter(parameter: dict, value) -> str:
         if not lo <= raw <= hi:
             raise ValueError("Wert außerhalb des zulässigen Bereichs")
     return raw.to_bytes(size, field.get("endian", "big"), signed=(field["type"] == "int")).hex().upper()
+
+
+def encode_command(command: dict) -> str:
+    """Encode a command's fixed value as the single raw byte IO-Link expects (uint8, subindex 0)."""
+    return command["value"].to_bytes(1, "big").hex().upper()
 
 
 def select_values(field: dict) -> list[float]:
