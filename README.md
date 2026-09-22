@@ -8,7 +8,7 @@
 
 <p align="center"><strong>Industriesensorik für dein Smart Home.<br>Pool, Heizung und Druckluft – lokal verbunden und gemeinsam im Blick.</strong></p>
 
-[![Version](https://img.shields.io/badge/version-0.8.0-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
+[![Version](https://img.shields.io/badge/version-0.8.1-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5)](https://www.hacs.xyz/)
 [![Tests](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
@@ -206,15 +206,21 @@ Ein Kommando schreibt einen festen Ganzzahlwert auf Index/Subindex 0 des Sensors
   "commands": [
     {
       "index": 2,
-      "value": 1,
-      "name": "Kalibrierung starten",
-      "description": "Startet die Nullpunkt-Kalibrierung"
+      "value": 208,
+      "name": "Leeren Tank abgleichen",
+      "description": "Kalibriert den Sensor auf den leeren Tank"
+    },
+    {
+      "index": 2,
+      "value": 209,
+      "name": "Vollen Tank abgleichen",
+      "description": "Kalibriert den Sensor auf den vollen Tank"
     }
   ]
 }
 ```
 
-- `index`: Parameterindex (0–65535), innerhalb des Profils eindeutig.
+- `index`: Parameterindex (0–65535). Mehrere Kommandos dürfen sich denselben Index teilen, wie hier – typisch für einen „System Command“-Parameter, bei dem verschiedene Werte verschiedene Befehle auslösen. Eindeutig sein muss die Kombination aus `index` **und** `value`.
 - `value`: der zu schreibende Wert, ein einzelnes Byte (0–255). Subindex ist immer 0.
 - `name`, `description`: Beschriftung und Hilfetext für den „Senden“-Button im Command Center.
 

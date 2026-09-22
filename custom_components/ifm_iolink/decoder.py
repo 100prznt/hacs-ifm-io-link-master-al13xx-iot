@@ -236,12 +236,16 @@ def validate_profile(profile: dict, *, custom: bool = False) -> dict:
         if not isinstance(command, dict) or set(command) - {"index", "name", "description", "value"}:
             raise ValueError("Ungültige Kommandodefinition")
         _integer(command.get("index"), 0, 65535, "Kommandoindex")
-        if command["index"] in seen_commands:
-            raise ValueError("Kommandoindex muss innerhalb des Profils eindeutig sein")
-        seen_commands.add(command["index"])
         _integer(command.get("value"), 0, 255, "Kommandowert")
-        for key in ("name", "description"):
-            if not isinstance(command.get(key, ""), str) or len(command.get(key, "")) > 4000:
+        # Several named commands commonly share one "system command" index with distinct
+        # values (e.g. calibrate-empty/calibrate-full) - only the (index, value) pair must
+        # be unique, not the index alone.
+        key = (command["index"], command["value"])
+        if key in seen_commands:
+            raise ValueError("Kommando (Index + Wert) muss innerhalb des Profils eindeutig sein")
+        seen_commands.add(key)
+        for label in ("name", "description"):
+            if not isinstance(command.get(label, ""), str) or len(command.get(label, "")) > 4000:
                 raise ValueError("Ungültiger Kommandotext")
     return profile
 

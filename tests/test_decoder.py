@@ -285,11 +285,22 @@ def test_reject_invalid_command_definitions(changes):
         validate_profile(p)
 
 
-def test_reject_duplicate_command_index():
+def test_allow_multiple_commands_sharing_one_index_with_different_values():
+    # A single "system command" index commonly carries several named commands,
+    # distinguished only by the value written to it (e.g. calibrate empty/full tank).
+    p = copy.deepcopy(profile("pn7096"))
+    p["commands"] = [
+        {"index": 2, "value": 208, "name": "Leeren Tank abgleichen", "description": ""},
+        {"index": 2, "value": 209, "name": "Vollen Tank abgleichen", "description": ""},
+    ]
+    validate_profile(p)
+
+
+def test_reject_duplicate_command_index_and_value():
     p = copy.deepcopy(profile("pn7096"))
     p["commands"] = [
         {"index": 2, "value": 1, "name": "A", "description": ""},
-        {"index": 2, "value": 2, "name": "B", "description": ""},
+        {"index": 2, "value": 1, "name": "B", "description": ""},
     ]
     with pytest.raises(ValueError):
         validate_profile(p)

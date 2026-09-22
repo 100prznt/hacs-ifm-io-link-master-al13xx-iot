@@ -458,7 +458,12 @@ def _command_coordinator(*, connected=True, identity_vendorid=310, identity_devi
     profile = {
         "id": "prof",
         "match": [{"vendorid": 310, "deviceid": 602}],
-        "commands": [{"index": 2, "value": 1, "name": "Kalibrierung starten", "description": ""}],
+        # Two commands deliberately share one index with different values, like a real
+        # IO-Link "system command" parameter (e.g. calibrate empty/full tank).
+        "commands": [
+            {"index": 2, "value": 208, "name": "Leeren Tank abgleichen", "description": ""},
+            {"index": 2, "value": 209, "name": "Vollen Tank abgleichen", "description": ""},
+        ],
     }
     identity = {"vendorid": identity_vendorid, "deviceid": identity_deviceid, "serial": "abc", "status": 2}
     writes = []
@@ -479,7 +484,7 @@ def _command_coordinator(*, connected=True, identity_vendorid=310, identity_devi
     return coordinator, writes
 
 
-def _run_send_command(ws, coordinator, index=2, port=1):
+def _run_send_command(ws, coordinator, index=2, value=208, port=1):
     hass = SimpleNamespace(tasks=[], data={"ifm_iolink": {"coordinators": {"entry1": coordinator}}})
     results, errors = [], []
     connection = SimpleNamespace(
@@ -489,7 +494,7 @@ def _run_send_command(ws, coordinator, index=2, port=1):
     )
 
     async def run():
-        ws.send_command(hass, connection, {"id": 1, "entry_id": "entry1", "port": port, "index": index})
+        ws.send_command(hass, connection, {"id": 1, "entry_id": "entry1", "port": port, "index": index, "value": value})
         await asyncio.gather(*hass.tasks)
 
     asyncio.run(run())
@@ -501,7 +506,21 @@ def test_send_command_writes_the_encoded_value_after_identity_check(ws):
     results, errors = _run_send_command(ws, coordinator)
     assert not errors
     assert results[0][1] == {"sent": True}
-    assert writes == [(1, 2, "01")]
+    assert writes == [(1, 2, "D0")]
+
+
+def test_send_command_picks_the_matching_value_when_index_is_shared(ws):
+    coordinator, writes = _command_coordinator()
+    results, errors = _run_send_command(ws, coordinator, value=209)
+    assert not errors
+    assert writes == [(1, 2, "D1")]
+
+
+def test_send_command_rejects_matching_index_with_wrong_value(ws):
+    coordinator, writes = _command_coordinator()
+    results, errors = _run_send_command(ws, coordinator, value=1)
+    assert errors
+    assert not writes
 
 
 def test_send_command_rejects_mismatched_identity_without_writing(ws):

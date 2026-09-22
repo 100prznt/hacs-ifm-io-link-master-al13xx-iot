@@ -1,6 +1,19 @@
 # Herstellerspezifische Kommandos im Geräteprofil
 
-Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Umgesetzt ab Version 0.8.0. Nutzerdoku dazu in `docs/device-profiles.md`.
+Arbeitsnotiz/Plan, nicht Teil der Nutzer-Doku. Umgesetzt ab Version 0.8.0, Bugfix in 0.8.1. Nutzerdoku dazu in `docs/device-profiles.md`.
+
+## Bugfix in 0.8.1: Eindeutigkeit fälschlich auf Index statt auf Index+Wert geprüft
+
+**Gemeldet von Elias (2026-09-22)** anhand eines realen Profils (ifm KQ1000, kapazitiver Füllstandssensor): Der System-Command-Parameter des Sensors liegt auf einem einzigen Index (2), verschiedene Werte lösen aber unterschiedliche Aktionen aus (`208` = leeren Tank abgleichen, `209` = vollen Tank abgleichen) – ein bei IO-Link-„System Command“-Parametern verbreitetes Muster. Die ursprüngliche Validierung in `decoder.py` verlangte einen **innerhalb des Profils eindeutigen Index**, was genau diesen (eigentlich korrekten) Fall ablehnte. Zusätzlich hätten der `send_command`-Websocket-Handler und der Panel-Button dasselbe Problem gehabt: beide identifizierten ein Kommando bisher nur über `index`, hätten bei zwei Kommandos am selben Index also immer das erste gefunden/gesendet, unabhängig davon, welcher Button geklickt wurde.
+
+**Fix:** Eindeutig sein muss die Kombination aus `index` **und** `value`, nicht der Index allein.
+
+- `decoder.py`: `validate_profile` prüft jetzt `(index, value)`-Tupel statt nur `index`.
+- `websocket.py`: `send_command` erwartet jetzt zusätzlich `value` in der Nachricht und sucht das Kommando über `index` **und** `value`.
+- `panel.js`: Button trägt zusätzlich `data-command-value`, das Ausgabe-Element bekommt die ID `command-${index}-${value}` statt nur `command-${index}`; der Klick-Handler schickt beide Werte mit.
+- Tests ergänzt: zwei Kommandos am selben Index mit unterschiedlichem Wert werden jetzt akzeptiert; ein Test sendet gezielt das zweite von zwei Kommandos am selben Index und prüft den korrekt kodierten Wert; ein Test prüft, dass ein bekannter Index mit falschem Wert abgelehnt wird.
+
+Kein Schaden entstanden, da das Feature zum Meldezeitpunkt gerade erst released war (0.8.0) und noch nicht produktiv mit einem solchen Profil genutzt wurde.
 
 ## Context
 

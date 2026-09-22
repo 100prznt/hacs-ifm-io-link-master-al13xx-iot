@@ -207,6 +207,7 @@ async def read_parameter(hass, connection, message):
         vol.Required("entry_id"): str,
         vol.Required("port"): int,
         vol.Required("index"): int,
+        vol.Required("value"): int,
     }
 )
 @websocket_api.require_admin
@@ -218,7 +219,12 @@ async def send_command(hass, connection, message):
         if not port_state["connected"]:
             raise ValueError("Port nicht verbunden")
         profile = coordinator.library.all.get(port_state["profile"], {})
-        command = next((c for c in profile.get("commands", []) if c["index"] == message["index"]), None)
+        # Several named commands can share one index with different values (e.g. a
+        # "system command" parameter), so both must match to identify the right one.
+        command = next(
+            (c for c in profile.get("commands", []) if c["index"] == message["index"] and c["value"] == message["value"]),
+            None,
+        )
         if not command:
             raise ValueError("Kommando nicht im zugewiesenen Profil")
         identity = await read_identity(coordinator, message["port"])

@@ -8,7 +8,7 @@
 
 <p align="center"><strong>Industrial sensors for your smart home.<br>Pool, heating and compressed air – connected locally, monitored together.</strong></p>
 
-[![Version](https://img.shields.io/badge/version-0.8.0-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
+[![Version](https://img.shields.io/badge/version-0.8.1-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5)](https://www.hacs.xyz/)
 [![Tests](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
@@ -205,15 +205,21 @@ A command writes a fixed integer value to index/subindex 0 of the sensor – mea
   "commands": [
     {
       "index": 2,
-      "value": 1,
-      "name": "Start calibration",
-      "description": "Starts the zero-point calibration"
+      "value": 208,
+      "name": "Calibrate empty tank",
+      "description": "Calibrates the sensor against the empty tank"
+    },
+    {
+      "index": 2,
+      "value": 209,
+      "name": "Calibrate full tank",
+      "description": "Calibrates the sensor against the full tank"
     }
   ]
 }
 ```
 
-- `index`: the parameter index (0–65535), unique within the profile.
+- `index`: the parameter index (0–65535). Several commands may share the same index, as shown here – typical for a "system command" parameter where different values trigger different actions. What must be unique is the combination of `index` **and** `value`.
 - `value`: the value to write, a single byte (0–255). Subindex is always 0.
 - `name`, `description`: label and help text for the "Send" button in the Command Center.
 
