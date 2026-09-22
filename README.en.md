@@ -8,7 +8,7 @@
 
 <p align="center"><strong>Industrial sensors for your smart home.<br>Pool, heating and compressed air – connected locally, monitored together.</strong></p>
 
-[![Version](https://img.shields.io/badge/version-0.8.1-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
+[![Version](https://img.shields.io/badge/version-0.8.2-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5)](https://www.hacs.xyz/)
 [![Tests](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
@@ -139,6 +139,7 @@ The pictured splitter is labelled **POE-SP02BT-POE** and offers several output v
 | **ifm PG1406** | Pressure (-0.124…2.5 bar), device status | Implemented; physical hardware testing pending |
 | **ifm SM9000** | Flow (5…300 l/min), totalizer, temperature, OUT1/OUT2 | Implemented; physical hardware testing pending |
 | **ifm SV4200** | Flow (1.0…20.0 l/min), temperature, OUT1/OUT2 | Implemented; physical hardware testing pending |
+| **ifm KQ1000** | Fill level (distance), device status, OUT1/OUT2/OUT3; tank calibration commands (empty/full), factory reset, blink | Implemented; physical hardware testing pending |
 | **Speck BADU FlowSonic Plus** | Flow, temperature, two totalizers and status flags | Real readings and Node-RED mapping checked |
 | **Other IO-Link devices** | IODD import or a custom JSON profile | Depends on the device format and supported data types |
 
@@ -237,7 +238,7 @@ node --check custom_components/ifm_iolink/frontend/panel.js
 
 Run `python scripts/preview.py` to start a local interface demo at `http://127.0.0.1:8765/`. It uses sample values only. Build the installation archive with `python scripts/package.py`.
 
-**241 automated tests** cover decoding, IODD import, API errors and restore validation, among other areas. A restore without value changes has been checked on a physical PN7094; actual changes and failure scenarios have so far been simulated. [Validation scope (German)](docs/validation.md)
+**249 automated tests** cover decoding, IODD import, API errors and restore validation, among other areas. A restore without value changes has been checked on a physical PN7094; actual changes and failure scenarios have so far been simulated. [Validation scope (German)](docs/validation.md)
 
 Bug reports, AL1352 hardware experiences and new sensor profiles are welcome through [GitHub Issues](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/issues). Please include the model, firmware, integration version and observed problem. Before uploading debug files or backups publicly, check them for private names, serial numbers and other installation-specific information.
 
