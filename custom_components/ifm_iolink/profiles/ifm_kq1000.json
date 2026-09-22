@@ -3,6 +3,18 @@
   "commands": [
     {
       "index": 2,
+      "value": 130,
+      "name": "Auslieferungszustand wiederherstellen",
+      "description": "SysCmd130"
+    },
+    {
+      "index": 2,
+      "value": 170,
+      "name": "Tankabgleiche zurücksetzen",
+      "description": "SysCmd170"
+    },
+    {
+      "index": 2,
       "value": 208,
       "name": "Leeren Tank abgleichen",
       "description": "SysCmd208"
@@ -12,6 +24,18 @@
       "value": 209,
       "name": "Vollen Tank abgleichen",
       "description": "SysCmd209"
+    },
+    {
+      "index": 2,
+      "value": 222,
+      "name": "Blinken An",
+      "description": "SysCmd222"
+    },
+    {
+      "index": 2,
+      "value": 223,
+      "name": "Blinken Aus",
+      "description": "SysCmd223"
     }
   ],
   "id": "custom_310_924_kq1000_0",
