@@ -8,7 +8,7 @@
 
 <p align="center"><strong>Industriesensorik für dein Smart Home.<br>Pool, Heizung und Druckluft – lokal verbunden und gemeinsam im Blick.</strong></p>
 
-[![Version](https://img.shields.io/badge/version-0.7.3-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
+[![Version](https://img.shields.io/badge/version-0.8.0-blue)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/blob/main/custom_components/ifm_iolink/manifest.json)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
 [![HACS](https://img.shields.io/badge/HACS-Custom%20Repository-41BDF5)](https://www.hacs.xyz/)
 [![Tests](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml/badge.svg)](https://github.com/100prznt/hacs-ifm-io-link-master-al13xx-iot/actions/workflows/tests.yml)
@@ -42,6 +42,7 @@ Gegenüber dem Original-Projekt von JS-DE-Tech ergänzt dieser Fork bisher:
 - **Versionsanzeige (ab 0.6.0):** Der Footer der Portübersicht zeigt die installierte Version. Für Update-Benachrichtigungen selbst ist bewusst kein eigener Mechanismus eingebaut – das übernimmt HACS bereits über seine eigene `update`-Entity (sichtbar unter Einstellungen → Geräte & Dienste bzw. der Updates-Übersicht), sobald für dieses Repository Releases gepflegt werden.
 - **Pin-2/Pin-4-Status direkt auf der Portkarte (ab 0.6.1):** Neben dem Steckernamen (X01, X02, …) zeigt ein kleines Badge live den Zustand des Digitaleingangs (Pin 2); ist ein Port als Digitalausgang konfiguriert, kommt ein zweites Badge für dessen Schaltzustand dazu, und die Kartenmitte zeigt statt „Gerät auswählen“ direkt „Digitalausgang (Pin 4) · 24 V, max. 300 mA“.
 - **Pin 4 auch als Digitaleingang, volle Modusauswahl (ab 0.7.0):** Pin 4 (C/Q) lässt sich jetzt zwischen IO-Link, Digitalausgang, Digitaleingang und Deaktiviert umschalten (vorher nur IO-Link/Digitalausgang) – über eine echte Auswahl statt eines einzelnen Umschalt-Buttons, weiterhin mit Vorschau und Bestätigung. Im Digitaleingang-Modus bekommt Pin 4 eine eigene `binary_sensor`-Entity, und die Portkarte zeigt für alle drei Nicht-IO-Link-Modi eine passende Kurzbeschreibung samt Badges (`DI2`/`DI4`/`DO`).
+- **Herstellerspezifische Kommandos (ab 0.8.0):** Geräteprofile können jetzt eigene, nicht in der IODD beschriebene Schreibkommandos definieren – fester Index und Ganzzahlwert, z. B. um eine Kalibrierung zu starten oder einen Werksreset auszulösen. Im Command Center erscheinen sie unter **Kommandos anzeigen** direkt neben der Parameterliste; ein Klick sendet den festen Wert sofort. Vor dem Senden wird die Gerätekennung frisch gegen das Profil geprüft, damit ein zwischenzeitlich getauschter Sensor nicht versehentlich denselben Befehl erhält. Details unter [Profilformat und Beispiele](docs/device-profiles.md).
 
 ## Funktionen
 
@@ -63,6 +64,7 @@ Gegenüber dem Original-Projekt von JS-DE-Tech ergänzt dieser Fork bisher:
 | **Digitaleingang Pin 2 als Entity** | Pin 2 jedes IO-Link-Ports ist hardwareseitig immer ein digitaler Eingang, unabhängig von Portmodus oder zugewiesenem Profil – als eigene `binary_sensor`-Entität je Port verfügbar. |
 | **Portmodus-Umschaltung (Pin 4)** | Im Command Center zwischen IO-Link, Digitalausgang, Digitaleingang und Deaktiviert wechseln – mit Vorschau und Bestätigung, da ein Wechsel einen angeschlossenen Sensor vom Port trennt. Im DO-Modus steht der Ausgangszustand als `switch`-Entität, im DI-Modus der Eingangszustand als `binary_sensor`-Entität zur Verfügung. |
 | **Versionsanzeige** | Installierte Version direkt auf der Portübersicht sichtbar. Updates selbst zeigt HACS über seine eigene `update`-Entity an. |
+| **Herstellerspezifische Kommandos** | Im Profil hinterlegte, feste Schreibkommandos (Index + Ganzzahlwert) für Aktionen, die nicht in der IODD stehen, z. B. eine Kalibrierung starten – direkt aus dem Command Center senden. |
 
 Die laufende Messwerterfassung liest die Geräte. Als Entity ausgewählte Herstellerparameter werden beim Start, nach jeder Änderung und stündlich gelesen. **Darüber hinaus erfolgen Schreibzugriffe nur bei einer ausdrücklich bestätigten Parameterwiederherstellung oder beim Setzen einer Parameter-`number`-Entity.** Master-Netzwerkeinstellungen werden durch diese Integration nicht eingerichtet; die IO-Link-Portbetriebsart (IO-Link/Digitalausgang/Digitaleingang/Deaktiviert) lässt sich seit 0.5.0 ausschließlich über die geprüfte Vorschau im Command Center ändern, nie automatisch oder per Automation.
 
@@ -207,7 +209,7 @@ node --check custom_components/ifm_iolink/frontend/panel.js
 
 Mit `python scripts/preview.py` startet eine lokale Oberflächen-Demo unter `http://127.0.0.1:8765/`. Sie arbeitet ausschließlich mit Beispielwerten. Das Installationspaket erstellt `python scripts/package.py`.
 
-**150 automatisierte Tests** decken unter anderem Dekodierung, IODD-Import, API-Fehler und Wiederherstellungsprüfungen ab. Eine Wiederherstellung ohne Wertänderungen wurde an einem realen PN7094 geprüft; tatsächliche Änderungen und Fehlerfälle wurden bislang simuliert. [Prüfumfang](docs/validation.md)
+**241 automatisierte Tests** decken unter anderem Dekodierung, IODD-Import, API-Fehler und Wiederherstellungsprüfungen ab. Eine Wiederherstellung ohne Wertänderungen wurde an einem realen PN7094 geprüft; tatsächliche Änderungen und Fehlerfälle wurden bislang simuliert. [Prüfumfang](docs/validation.md)
 
 Fehler, Erfahrungen mit dem AL1352 und neue Sensorprofile sind als [GitHub-Issue](https://github.com/JS-DE-Tech/hacs-ifm-io-link-master-al13xx-iot/issues) willkommen. Bitte Modell, Firmware, Integrationsversion und den beobachteten Fehler nennen. Debug-Dateien und Sicherungen vor dem öffentlichen Hochladen auf private Bezeichnungen, Seriennummern und sonstige anlagenspezifische Angaben prüfen.
 
